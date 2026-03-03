@@ -49,12 +49,15 @@ const ProjectList = () => {
         setDisplayedProjects={setDisplayedProjects}
       />
       <ListContainer>
-        {!loading &&
-          displayedProjects.map((project, index) => (
-            <ProjectItem key={index}>
+        {!loading && displayedProjects.length === 0 ? (
+          <p>No projects found.</p>
+        ) : (
+          displayedProjects.map((project) => (
+            <ProjectItem key={project.projectId}>
               <ProjectCard project={project} />
             </ProjectItem>
-          ))}
+          ))
+        )}
       </ListContainer>
     </ParentContainer>
   );
