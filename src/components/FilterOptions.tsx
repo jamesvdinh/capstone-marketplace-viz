@@ -67,7 +67,6 @@ const FilterOptions = ({ projects, setDisplayedProjects }: FilterProps) => {
       />
 
       <SelectWrapper>
-        <label htmlFor="category">Dept:</label>
         <Dropdown id="category" onChange={(e) => setDeptInput(e.target.value)}>
           <option value="">All Deptartments</option>
           {depts.map((dept) => (
