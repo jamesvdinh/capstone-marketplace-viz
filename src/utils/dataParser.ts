@@ -1,8 +1,19 @@
 import type { Project } from "../types/project";
 
-const splitTags = (text: string): string[] => {
+const splitTags = (
+  text: string,
+  ...mods: Array<(s: string) => string>
+): string[] => {
   if (typeof text !== "string") return [];
-  return text.split(",").map((tag) => tag.trim());
+  return text
+    .split(/[;,]/)
+    .map((tag) => {
+      const processedTag = tag.trim();
+      if (!processedTag) return null;
+
+      return mods.reduce((acc, fn) => fn(acc), processedTag);
+    })
+    .filter((tag): tag is string => tag !== null); // Clean up nulls
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
