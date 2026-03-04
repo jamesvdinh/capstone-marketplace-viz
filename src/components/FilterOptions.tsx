@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import styled from "styled-components";
+import * as palette from ".././styles/GlobalStyles";
 import type { Project } from "../types/project";
 
 interface FilterProps {
@@ -62,13 +63,13 @@ const FilterOptions = ({ projects, setDisplayedProjects }: FilterProps) => {
     <ParentContainer>
       <SearchInput
         type="text"
-        placeholder="Search projects..."
+        placeholder="Search by title, keywords..."
         onChange={(e) => setSearchInput(e.target.value)}
       />
 
       <SelectWrapper>
         <Dropdown id="category" onChange={(e) => setDeptInput(e.target.value)}>
-          <option value="">All Deptartments</option>
+          <option value="">- Any -</option>
           {depts.map((dept) => (
             <option value={dept.toLowerCase()} key={dept.toLowerCase()}>
               {dept}
@@ -87,6 +88,7 @@ const ParentContainer = styled.div`
   padding: 1rem 0;
   align-items: center;
   width: 100%;
+  line-height: 1.5rem;
 
   @media (max-width: 600px) {
     flex-direction: column;
@@ -101,9 +103,10 @@ const SearchInput = styled.input`
   border-radius: 8px;
   font-size: 1rem;
   outline: none;
+  height: 45px;
 
   &:focus {
-    border-color: #3498db;
+    border-color: ${palette.accent};
   }
 `;
 
@@ -122,7 +125,8 @@ const SelectWrapper = styled.div`
 
 const Dropdown = styled.select`
   width: 100%;
-  padding: 10px;
+  height: 45px;
+  padding: 10px 15px;
   border-radius: 8px;
   border: 1px solid #ddd;
   background-color: white;

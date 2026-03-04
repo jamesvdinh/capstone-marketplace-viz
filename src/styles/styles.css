@@ -1,0 +1,5 @@
+@import "tailwindcss";
+
+ol {
+  padding-left: 40px;
+}

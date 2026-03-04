@@ -1,12 +1,16 @@
 import GlobalStyles from "./styles/GlobalStyles";
+import "./styles/styles.css";
+
 import ProjectList from "./components/ProjectList";
 import styled from "styled-components";
+import Instructions from "./components/Instructions";
 
 function App() {
   return (
     <>
       <GlobalStyles />
       <ParentContainer>
+        <Instructions />
         <ProjectList />
       </ParentContainer>
     </>
@@ -14,7 +18,6 @@ function App() {
 }
 
 const ParentContainer = styled.div`
-  display: flex;
   justify-content: center;
   padding: 2rem;
 `;

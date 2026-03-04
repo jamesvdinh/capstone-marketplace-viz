@@ -1,5 +1,6 @@
 import type { Project } from "../types/project";
 import styled, { css } from "styled-components";
+import * as palette from ".././styles/GlobalStyles";
 
 const ProjectCard = ({ project }: { project: Project }) => {
   return (
@@ -33,7 +34,7 @@ const truncateText = css`
 const ParentContainer = styled.div`
   display: flex;
   flex-flow: column nowrap;
-  border: 1px solid gray;
+  border: 1px solid ${palette.borderColor};
   border-radius: 5px;
   overflow: hidden;
   width: 280px;
