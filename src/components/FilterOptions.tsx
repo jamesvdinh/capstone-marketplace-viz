@@ -104,6 +104,7 @@ const SearchInput = styled.input`
   font-size: 1rem;
   outline: none;
   height: 45px;
+  background-color: white;
 
   &:focus {
     border-color: ${palette.accent};

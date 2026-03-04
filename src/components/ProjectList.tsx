@@ -48,6 +48,10 @@ const ProjectList = () => {
         projects={projects}
         setDisplayedProjects={setDisplayedProjects}
       />
+      <Counter>
+        {displayedProjects.length} / {projects.length} projects shown
+      </Counter>
+      <Separator />
       <ListContainer>
         {!loading && displayedProjects.length === 0 ? (
           <p>No projects found.</p>
@@ -69,6 +73,14 @@ const ParentContainer = styled.div`
   margin: 2rem auto;
   max-width: 1200px;
   justify-content: left;
+`;
+
+const Counter = styled.div`
+  displaty: flex;
+`;
+
+const Separator = styled.hr`
+  margin: 1rem 0;
 `;
 
 const ListContainer = styled.ul`
