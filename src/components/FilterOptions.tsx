@@ -69,7 +69,7 @@ const FilterOptions = ({ projects, setDisplayedProjects }: FilterProps) => {
 
       <SelectWrapper>
         <Dropdown id="category" onChange={(e) => setDeptInput(e.target.value)}>
-          <option value="">- Any -</option>
+          <option value="">- Any Department -</option>
           {depts.map((dept) => (
             <option value={dept.toLowerCase()} key={dept.toLowerCase()}>
               {dept}
@@ -114,7 +114,7 @@ const SearchInput = styled.input`
 const SelectWrapper = styled.div`
   flex: 1;
   display: flex;
-  align-items: center;
+  flex-flow: column nowrap;
   gap: 0.5rem;
 
   label {
