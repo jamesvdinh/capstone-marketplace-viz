@@ -63,7 +63,7 @@ const FilterOptions = ({ projects, setDisplayedProjects }: FilterProps) => {
     <ParentContainer>
       <SearchInput
         type="text"
-        placeholder="Search by title, keywords..."
+        placeholder="Search by title, keywords, advisor..."
         onChange={(e) => setSearchInput(e.target.value)}
       />
 
