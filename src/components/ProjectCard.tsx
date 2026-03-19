@@ -4,14 +4,14 @@ import * as palette from ".././styles/GlobalStyles";
 
 const ProjectCard = ({ project }: { project: Project }) => {
   return (
-    <ParentContainer>
+    <ParentContainer href={project.url} target="_blank">
       <ProjectId>ID: {project.projectId}</ProjectId>
       <Thumbnail
         src="https://static.vecteezy.com/system/resources/thumbnails/050/798/644/small/detailed-view-of-interlocking-metallic-gears-in-motion-showcasing-the-complexity-and-precision-of-mechanical-engineering-and-machinery-photo.jpeg"
         alt="Project Thumbnail"
       />
       <ContentContainer>
-        <Title>{project.name}</Title>
+        <Title title={project.name}>{project.name}</Title>
         <KeywordContainer>
           {project.keywords.length > 0 &&
             project.keywords.map((keyword, i) => (
@@ -31,7 +31,7 @@ const truncateText = css`
   max-height: calc(1.5em * 4);
 `;
 
-const ParentContainer = styled.div`
+const ParentContainer = styled.a`
   display: flex;
   flex-flow: column nowrap;
   border: 1px solid ${palette.borderColor};
@@ -42,6 +42,13 @@ const ParentContainer = styled.div`
   line-height: 1.4;
   animation: fade-in 0.3s ease;
   position: relative;
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+
+  &:hover {
+    transform: translateY(-5px);
+
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
+  }
 
   &.excess {
     display: none;

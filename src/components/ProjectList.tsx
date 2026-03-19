@@ -7,7 +7,7 @@ import { parseProjectData } from "../utils/dataParser";
 import FilterOptions from "./FilterOptions";
 
 const API_URL =
-  "https://script.google.com/macros/s/AKfycbywxo9WPmgDkomn1W51lB89p6qczti2PBHtc9gGjxx97oM71BHTIinJ23UNbqNvpQFUBQ/exec";
+  "https://script.google.com/macros/s/AKfycbxATY_2WcMndUutAJxMFCAW9M2C5Z--96FIN0rdHZ1_p7RBLkyDnpMb0nHjt5P_BU0Neg/exec";
 
 const ProjectList = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -24,7 +24,6 @@ const ProjectList = () => {
         const formattedData: Project[] = data.map((item: any) =>
           parseProjectData(item)
         );
-        console.log(formattedData[0]);
         setProjects(formattedData);
         setDisplayedProjects(formattedData);
       } catch (error) {
@@ -57,9 +56,9 @@ const ProjectList = () => {
           <p>No projects found.</p>
         ) : (
           displayedProjects.map((project) => (
-            <ProjectItem key={project.projectId}>
+            <li key={project.projectId}>
               <ProjectCard project={project} />
-            </ProjectItem>
+            </li>
           ))
         )}
       </ListContainer>
@@ -83,7 +82,7 @@ const Separator = styled.hr`
   margin: 1rem 0;
 `;
 
-const ListContainer = styled.ul`
+const ListContainer = styled.div`
   display: flex;
   flex-flow: row wrap;
   align-items: stretch;
@@ -124,7 +123,5 @@ const LoadingIcon = styled.div`
     }
   }
 `;
-
-const ProjectItem = styled.li``;
 
 export default ProjectList;

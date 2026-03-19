@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import styled from "styled-components";
 import * as palette from ".././styles/GlobalStyles";
 import type { Project } from "../types/project";
@@ -10,73 +10,126 @@ interface FilterProps {
 
 const FilterOptions = ({ projects, setDisplayedProjects }: FilterProps) => {
   const [searchInput, setSearchInput] = useState("");
-  const [deptInput, setDeptInput] = useState("");
-  const [depts, setDepts] = useState<string[]>([]);
+  const [advisorDeptInput, setAdvisorDeptInput] = useState("");
+  const [acceptingStudentsFromInput, setAcceptingStudentsFromInput] =
+    useState("");
 
-  useEffect(() => {
-    const getDepts = () => {
-      const uniqueDepts = new Set<string>();
-      projects.forEach((project) => {
-        if (project.ucbAffiliation) {
-          uniqueDepts.add(project.ucbAffiliation.trim());
-        }
-      });
-      setDepts(Array.from(uniqueDepts));
+  const { advisorDepts, acceptingStudentsFrom } = useMemo(() => {
+    const uniqueAdvisorDepts = new Set<string>();
+    const uniqueacceptingStudentsFrom = new Set<string>();
+    projects.forEach((project) => {
+      if (project.ucbAffiliation) {
+        uniqueAdvisorDepts.add(project.ucbAffiliation.trim());
+      }
+
+      if (project.acceptingMajors) {
+        project.acceptingMajors.forEach((major) => {
+          if (major) uniqueacceptingStudentsFrom.add(major.trim());
+        });
+      }
+    });
+
+    return {
+      advisorDepts: Array.from(uniqueAdvisorDepts).sort(),
+      acceptingStudentsFrom: Array.from(uniqueacceptingStudentsFrom).sort(),
     };
-
-    getDepts();
   }, [projects]);
 
+  const handleReset = () => {
+    setSearchInput("");
+    setAdvisorDeptInput("");
+    setAcceptingStudentsFromInput("");
+  };
+
+  const displayedProjects = useMemo(() => {
+    let filtered = projects;
+
+    if (searchInput) {
+      const searchRegex = new RegExp(
+        "\\b" + searchInput.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+        "i"
+      );
+
+      filtered = filtered.filter((project) => {
+        const test = (val: string) => searchRegex.test(val);
+        return (
+          test(project.projectId.toString()) ||
+          test(project.name) ||
+          project.keywords.some(test) ||
+          test(project.IOR) ||
+          project.advisorNames.some(test) ||
+          test(project.affiliation)
+        );
+      });
+    }
+
+    if (advisorDeptInput) {
+      filtered = filtered.filter((project) =>
+        project.ucbAffiliation
+          .toLowerCase()
+          .includes(advisorDeptInput.toLowerCase())
+      );
+    }
+
+    if (acceptingStudentsFromInput) {
+      filtered = filtered.filter((project) =>
+        project.acceptingMajors.some((major) =>
+          major.toLowerCase().includes(acceptingStudentsFromInput.toLowerCase())
+        )
+      );
+    }
+
+    return filtered;
+  }, [projects, searchInput, advisorDeptInput, acceptingStudentsFromInput]);
+
   useEffect(() => {
-    const handleFilterChange = () => {
-      let filtered = projects;
-
-      if (searchInput) {
-        const searchLower = searchInput.toLowerCase();
-        filtered = filtered.filter(
-          (project) =>
-            project.name.toLowerCase().includes(searchLower) ||
-            project.keywords.some((keyword) =>
-              keyword.toLowerCase().includes(searchLower)
-            ) ||
-            project.IOR.toLowerCase().includes(searchLower) ||
-            project.advisorNames.some((name) =>
-              name.toLowerCase().includes(searchLower)
-            ) ||
-            project.affiliation.toLowerCase().includes(searchLower)
-        );
-      }
-
-      if (deptInput) {
-        filtered = filtered.filter((project) =>
-          project.ucbAffiliation.toLowerCase().includes(deptInput.toLowerCase())
-        );
-      }
-
-      setDisplayedProjects(filtered);
-    };
-
-    handleFilterChange();
-  }, [projects, setDisplayedProjects, searchInput, deptInput]);
+    setDisplayedProjects(displayedProjects);
+  }, [displayedProjects, setDisplayedProjects]);
 
   return (
     <ParentContainer>
-      <SearchInput
-        type="text"
-        placeholder="Search by title, keywords, advisor..."
-        onChange={(e) => setSearchInput(e.target.value)}
-      />
+      <SelectWrapper className="search">
+        <Label htmlFor="search">Search</Label>
+        <SearchInput
+          id="search"
+          type="text"
+          value={searchInput}
+          placeholder="Search by id, title, keywords, advisor..."
+          onChange={(e) => setSearchInput(e.target.value)}
+        />
+      </SelectWrapper>
 
       <SelectWrapper>
-        <Dropdown id="category" onChange={(e) => setDeptInput(e.target.value)}>
-          <option value="">- Any Department -</option>
-          {depts.map((dept) => (
-            <option value={dept.toLowerCase()} key={dept.toLowerCase()}>
-              {dept}
+        <Label htmlFor="advisor_dept">Advisor Department</Label>
+        <Dropdown
+          id="advisor_dept"
+          value={advisorDeptInput}
+          onChange={(e) => setAdvisorDeptInput(e.target.value)}
+        >
+          <option value="">- Any -</option>
+          {advisorDepts.map((item) => (
+            <option value={item.toLowerCase()} key={item.toLowerCase()}>
+              {item}
             </option>
           ))}
         </Dropdown>
       </SelectWrapper>
+      <SelectWrapper>
+        <Label htmlFor="accepting_students_from">Accepting Students From</Label>
+        <Dropdown
+          id="accepting_students_from"
+          value={acceptingStudentsFromInput}
+          onChange={(e) => setAcceptingStudentsFromInput(e.target.value)}
+        >
+          <option value="">- Any -</option>
+          {acceptingStudentsFrom.map((item) => (
+            <option value={item.toLowerCase()} key={item.toLowerCase()}>
+              {item}
+            </option>
+          ))}
+        </Dropdown>
+      </SelectWrapper>
+      <ResetButton onClick={handleReset}>Reset</ResetButton>
     </ParentContainer>
   );
 };
@@ -97,7 +150,6 @@ const ParentContainer = styled.div`
 `;
 
 const SearchInput = styled.input`
-  flex: 2; /* Takes twice the space of other items */
   padding: 10px 15px;
   border: 1px solid #ddd;
   border-radius: 8px;
@@ -111,16 +163,41 @@ const SearchInput = styled.input`
   }
 `;
 
+const ResetButton = styled.button`
+  padding: 10px 15px;
+  border: none;
+  border-radius: 8px;
+  background-color: ${palette.accent};
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  align-self: flex-end;
+  transition: filter 0.3s ease;
+
+  &:hover {
+    filter: brightness(0.9);
+  }
+
+  &:active {
+    filter: brightness(0.7);
+  }
+`;
+
+const Label = styled.label`
+  font-size: 1rem;
+  color: #666;
+  white-space: nowrap;
+  font-weight: bold;
+`;
+
 const SelectWrapper = styled.div`
   flex: 1;
   display: flex;
   flex-flow: column nowrap;
   gap: 0.5rem;
 
-  label {
-    font-size: 0.9rem;
-    color: #666;
-    white-space: nowrap;
+  &.search {
+    flex: 2; /* Takes twice the space of other items */
   }
 `;
 

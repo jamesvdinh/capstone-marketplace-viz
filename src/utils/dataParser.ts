@@ -21,7 +21,7 @@ export const parseProjectData = (raw: any): Project => {
   return {
     projectId: Number(raw["Project ID"]), // Ensure it's a number
     name: String(raw["Project Name"] || ""),
-    url: String(raw.url || ""), // Need to extract hyperlink from sheets
+    url: String(raw["Project Name_url"] || ""),
     videoIntro: String(raw["Project Video Introduction"] || ""),
 
     // Transform comma-separated strings into Arrays
