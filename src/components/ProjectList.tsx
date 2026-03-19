@@ -9,14 +9,41 @@ import FilterOptions from "./FilterOptions";
 const API_URL =
   "https://script.google.com/macros/s/AKfycbxATY_2WcMndUutAJxMFCAW9M2C5Z--96FIN0rdHZ1_p7RBLkyDnpMb0nHjt5P_BU0Neg/exec";
 
+const CACHE_KEY = "marketplace_projects_cache";
+const CACHE_EXPIRATION = 30 * 60 * 1000; // 30 mins
+
+const CACHE_REFRESH_KEY = "marketplace_projects_last_refresh";
+
 const ProjectList = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [displayedProjects, setDisplayedProjects] =
     useState<Project[]>(projects);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState(true);
+  const [forceRefresh, setForceRefresh] = useState(false);
+  const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
 
   useEffect(() => {
+    const cachedRefresh = localStorage.getItem(CACHE_REFRESH_KEY);
+    if (cachedRefresh) {
+      setLastRefreshed(new Date(parseInt(cachedRefresh)));
+    }
+
     const fetchProjectsFromSheet = async () => {
+      // load from cache if available
+      const cachedData = localStorage.getItem(CACHE_KEY);
+      if (cachedData && !forceRefresh) {
+        const { data, timestamp } = JSON.parse(cachedData);
+
+        setProjects(data);
+        setDisplayedProjects(data);
+        setLoading(false);
+
+        if (Date.now() - timestamp < CACHE_EXPIRATION) {
+          return;
+        }
+      }
+
+      // if no fresh cache, fetch projects like normal and update cache
       try {
         const response = await fetch(API_URL);
         const data = await response.json();
@@ -26,15 +53,25 @@ const ProjectList = () => {
         );
         setProjects(formattedData);
         setDisplayedProjects(formattedData);
+        localStorage.setItem(
+          CACHE_KEY,
+          JSON.stringify({
+            data: formattedData,
+            timestamp: Date.now(),
+          })
+        );
       } catch (error) {
         console.error("Error fetching projects:", error);
       } finally {
         setLoading(false);
+        setLastRefreshed(new Date());
+        localStorage.setItem(CACHE_REFRESH_KEY, Date.now().toString());
+        setForceRefresh(false);
       }
     };
 
     fetchProjectsFromSheet();
-  }, []);
+  }, [forceRefresh]);
 
   return (
     <ParentContainer>
@@ -47,9 +84,29 @@ const ProjectList = () => {
         projects={projects}
         setDisplayedProjects={setDisplayedProjects}
       />
-      <Counter>
-        {displayedProjects.length} / {projects.length} projects shown
-      </Counter>
+      <ListInfo>
+        <span>
+          {displayedProjects.length} / {projects.length} projects shown
+        </span>
+        <RefreshContainer>
+          <p className="update-text">
+            Last Refreshed:
+            <br />
+            {lastRefreshed
+              ? `${lastRefreshed?.toLocaleDateString()}, 
+            ${lastRefreshed?.toLocaleTimeString()}`
+              : "n/a"}
+          </p>
+          <RefreshButton
+            onClick={() => {
+              setLoading(true);
+              setForceRefresh((prev) => !prev);
+            }}
+          >
+            Refresh Projects
+          </RefreshButton>
+        </RefreshContainer>
+      </ListInfo>
       <Separator />
       <ListContainer>
         {!loading && displayedProjects.length === 0 ? (
@@ -74,12 +131,14 @@ const ParentContainer = styled.div`
   justify-content: left;
 `;
 
-const Counter = styled.div`
-  displaty: flex;
+const ListInfo = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
 `;
 
 const Separator = styled.hr`
-  margin: 1rem 0;
+  margin: 0.75rem 0;
 `;
 
 const ListContainer = styled.div`
@@ -91,6 +150,37 @@ const ListContainer = styled.div`
   margin: none;
   padding: unset;
   gap: 1.5rem;
+`;
+
+const RefreshContainer = styled.div`
+  display: flex;
+  flex-flow: row nowrap;
+  gap: 0.5rem;
+  align-items: end;
+
+  .update-text {
+    font-size: 0.75rem;
+  }
+`;
+
+const RefreshButton = styled.button`
+  padding: 5px 10px;
+  border: none;
+  border-radius: 8px;
+  background-color: gray;
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  align-self: flex-end;
+  transition: filter 0.3s ease;
+
+  &:hover {
+    filter: brightness(0.9);
+  }
+
+  &:active {
+    filter: brightness(0.7);
+  }
 `;
 
 const LoadingContainer = styled.div`
