@@ -3,3 +3,8 @@
 ol {
   padding-left: 40px;
 }
+
+.small-icon {
+  width: 12px;
+  height: 12px;
+}

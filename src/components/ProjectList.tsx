@@ -5,6 +5,13 @@ import ProjectCard from "./ProjectCard";
 import * as palette from ".././styles/GlobalStyles";
 import { parseProjectData } from "../utils/dataParser";
 import FilterOptions from "./FilterOptions";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { library } from "@fortawesome/fontawesome-svg-core";
+
+import { fas } from "@fortawesome/free-solid-svg-icons";
+import { far } from "@fortawesome/free-regular-svg-icons";
+
+library.add(fas, far);
 
 const API_URL =
   "https://script.google.com/macros/s/AKfycbxATY_2WcMndUutAJxMFCAW9M2C5Z--96FIN0rdHZ1_p7RBLkyDnpMb0nHjt5P_BU0Neg/exec";
@@ -21,6 +28,23 @@ const ProjectList = () => {
   const [loading, setLoading] = useState(true);
   const [forceRefresh, setForceRefresh] = useState(false);
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 600) {
+        setViewMode("list");
+      }
+    };
+
+    handleResize();
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  });
 
   useEffect(() => {
     const cachedRefresh = localStorage.getItem(CACHE_REFRESH_KEY);
@@ -38,6 +62,7 @@ const ProjectList = () => {
         setDisplayedProjects(data);
         setLoading(false);
 
+        // once cache is loaded, check if it's still fresh. If so, skip fetching
         if (Date.now() - timestamp < CACHE_EXPIRATION) {
           return;
         }
@@ -105,16 +130,30 @@ const ProjectList = () => {
           >
             Refresh Projects
           </RefreshButton>
+          <ViewToggle>
+            <button
+              className={viewMode === "grid" ? "active" : ""}
+              onClick={() => setViewMode("grid")}
+            >
+              <FontAwesomeIcon icon={["fas", "th-large"]} />
+            </button>
+            <button
+              className={viewMode === "list" ? "active" : ""}
+              onClick={() => setViewMode("list")}
+            >
+              <FontAwesomeIcon icon={["fas", "list"]} />
+            </button>
+          </ViewToggle>
         </RefreshContainer>
       </ListInfo>
       <Separator />
-      <ListContainer>
+      <ListContainer $viewMode={viewMode}>
         {!loading && displayedProjects.length === 0 ? (
           <p>No projects found.</p>
         ) : (
           displayedProjects.map((project) => (
             <li key={project.projectId}>
-              <ProjectCard project={project} />
+              <ProjectCard project={project} viewMode={viewMode} />
             </li>
           ))
         )}
@@ -133,33 +172,66 @@ const ParentContainer = styled.div`
 
 const ListInfo = styled.div`
   display: flex;
+  flex-flow: row wrap;
   justify-content: space-between;
   align-items: end;
+  gap: 1rem;
 `;
 
 const Separator = styled.hr`
   margin: 0.75rem 0;
 `;
 
-const ListContainer = styled.div`
+const ListContainer = styled.ul<{ $viewMode: "grid" | "list" }>`
   display: flex;
-  flex-flow: row wrap;
+  flex-flow: ${(props) =>
+    props.$viewMode === "grid" ? "row wrap" : "column nowrap"};
   align-items: stretch;
   justify-content: center;
   list-style: none;
   margin: none;
   padding: unset;
   gap: 1.5rem;
+
+  li {
+    width: ${(props) => (props.$viewMode === "grid" ? "auto" : "100%")};
+    transition: width 0.3s ease;
+  }
+`;
+
+const ViewToggle = styled.div`
+  display: flex;
+  gap: 0.5rem;
+
+  button {
+    background: #f3f4f6;
+    border: 1px solid #ddd;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &.active {
+      background: ${palette.accent};
+      color: white;
+      border-color: ${palette.accent};
+    }
+  }
+
+  @media (max-width: 600px) {
+    display: none;
+  }
 `;
 
 const RefreshContainer = styled.div`
   display: flex;
-  flex-flow: row nowrap;
+  flex-flow: row wrap;
   gap: 0.5rem;
   align-items: end;
 
   .update-text {
     font-size: 0.75rem;
+    min-width: 90px;
   }
 `;
 
