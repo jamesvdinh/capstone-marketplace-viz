@@ -49,7 +49,10 @@ const Instructions = () => {
       </ol>
       <p>
         Jump in below or go here for a version to search or filter:{" "}
-        <Link href="https://docs.google.com/spreadsheets/d/1H6_iAmTeatsI0fKzxLVOAIRjzf-d03d9fq5IhRXKhCk/edit?gid=0#gid=0">
+        <Link
+          href="https://docs.google.com/spreadsheets/d/1H6_iAmTeatsI0fKzxLVOAIRjzf-d03d9fq5IhRXKhCk/edit?gid=0#gid=0"
+          target="_blank"
+        >
           AY25-26 Project Marketplace Overview.
         </Link>
       </p>
