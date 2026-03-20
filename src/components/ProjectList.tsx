@@ -29,6 +29,26 @@ const ProjectList = () => {
   const [forceRefresh, setForceRefresh] = useState(false);
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 300);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -44,7 +64,7 @@ const ProjectList = () => {
     return () => {
       window.removeEventListener("resize", handleResize);
     };
-  });
+  }, []);
 
   useEffect(() => {
     const cachedRefresh = localStorage.getItem(CACHE_REFRESH_KEY);
@@ -158,6 +178,9 @@ const ProjectList = () => {
           ))
         )}
       </ListContainer>
+      <ScrollTopButton $show={showScrollTop} onClick={scrollToTop}>
+        <FontAwesomeIcon icon={["fas", "arrow-up"]} />
+      </ScrollTopButton>
     </ParentContainer>
   );
 };
@@ -283,6 +306,36 @@ const LoadingIcon = styled.div`
     100% {
       transform: rotate(360deg);
     }
+  }
+`;
+
+const ScrollTopButton = styled.button<{ $show: boolean }>`
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: ${palette.accent};
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+
+  /* Smooth entry/exit */
+  opacity: ${(props) => (props.$show ? "1" : "0")};
+  visibility: ${(props) => (props.$show ? "visible" : "hidden")};
+  transform: translateY(${(props) => (props.$show ? "0" : "20px")});
+  transition: all 0.3s ease-in-out;
+
+  &:hover {
+    transform: translateY(-5px);
+    filter: brightness(0.9);
   }
 `;
 
