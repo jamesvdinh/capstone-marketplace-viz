@@ -10,6 +10,7 @@ import { library } from "@fortawesome/fontawesome-svg-core";
 
 import { fas } from "@fortawesome/free-solid-svg-icons";
 import { far } from "@fortawesome/free-regular-svg-icons";
+import toast from "react-hot-toast";
 
 library.add(fas, far);
 
@@ -68,6 +69,7 @@ const ProjectList = () => {
 
   useEffect(() => {
     const cachedRefresh = localStorage.getItem(CACHE_REFRESH_KEY);
+    // set the current time as last refreshed time
     if (cachedRefresh) {
       setLastRefreshed(new Date(parseInt(cachedRefresh)));
     }
@@ -105,7 +107,21 @@ const ProjectList = () => {
             timestamp: Date.now(),
           })
         );
+        toast.success("Projects up to date!", {
+          style: {
+            borderRadius: "8px",
+            background: "#333",
+            color: "#fff",
+          },
+        });
       } catch (error) {
+        toast.error("Failed to refresh projects. Please try again later.", {
+          style: {
+            borderRadius: "8px",
+            background: "#333",
+            color: "#fff",
+          },
+        });
         console.error("Error fetching projects:", error);
       } finally {
         setLoading(false);

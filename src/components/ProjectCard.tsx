@@ -59,7 +59,7 @@ const ParentContainer = styled.a<{ $viewMode: string }>`
   border-radius: 5px;
   overflow: hidden;
   width: ${(props) => (props.$viewMode === "grid" ? "280px;" : "100%")};
-  height: ${(props) => (props.$viewMode === "grid" ? "100%" : "150px")};
+  height: ${(props) => (props.$viewMode === "grid" ? "100%" : "auto")};
   line-height: 1.4;
   animation: fade-in 0.3s ease;
   position: relative;
@@ -112,7 +112,7 @@ const ProjectId = styled.div`
 
 const Thumbnail = styled.img<{ $viewMode: string }>`
   width: ${(props) => (props.$viewMode === "grid" ? "100%" : "200px")};
-  height: 150px;
+  height: ${(props) => (props.$viewMode === "grid" ? "150px" : "150px")};
   object-fit: cover;
   text-align: center;
   background-color: #f0f0f0;
