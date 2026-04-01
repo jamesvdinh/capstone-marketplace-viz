@@ -6,10 +6,11 @@ import type { Project } from "../types/project";
 interface FilterProps {
   projects: Project[];
   setDisplayedProjects: React.Dispatch<React.SetStateAction<Project[]>>;
+  searchInput: string;
+  setSearchInput: (value: string) => void;
 }
 
-const FilterOptions = ({ projects, setDisplayedProjects }: FilterProps) => {
-  const [searchInput, setSearchInput] = useState("");
+const FilterOptions = ({ projects, setDisplayedProjects, searchInput, setSearchInput }: FilterProps) => {
   const [advisorDeptInput, setAdvisorDeptInput] = useState("");
   const [acceptingStudentsFromInput, setAcceptingStudentsFromInput] =
     useState("");

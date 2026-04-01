@@ -22,7 +22,15 @@ const CACHE_EXPIRATION = 30 * 60 * 1000; // 30 mins
 
 const CACHE_REFRESH_KEY = "marketplace_projects_last_refresh";
 
-const ProjectList = () => {
+const ProjectList = ({
+  onProjectsLoaded,
+  searchInput,
+  setSearchInput,
+}: {
+  onProjectsLoaded?: (projects: Project[]) => void;
+  searchInput: string;
+  setSearchInput: (value: string) => void;
+}) => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [displayedProjects, setDisplayedProjects] =
     useState<Project[]>(projects);
@@ -82,6 +90,7 @@ const ProjectList = () => {
 
         setProjects(data);
         setDisplayedProjects(data);
+        onProjectsLoaded?.(data);
         setLoading(false);
 
         // once cache is loaded, check if it's still fresh. If so, skip fetching
@@ -100,6 +109,7 @@ const ProjectList = () => {
         );
         setProjects(formattedData);
         setDisplayedProjects(formattedData);
+        onProjectsLoaded?.(formattedData);
         localStorage.setItem(
           CACHE_KEY,
           JSON.stringify({
@@ -132,7 +142,7 @@ const ProjectList = () => {
     };
 
     fetchProjectsFromSheet();
-  }, [forceRefresh]);
+  }, [forceRefresh, onProjectsLoaded]);
 
   return (
     <ParentContainer>
@@ -144,6 +154,8 @@ const ProjectList = () => {
       <FilterOptions
         projects={projects}
         setDisplayedProjects={setDisplayedProjects}
+        searchInput={searchInput}
+        setSearchInput={setSearchInput}
       />
       <ListInfo>
         <span>
