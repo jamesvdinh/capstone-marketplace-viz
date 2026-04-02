@@ -35,7 +35,11 @@ function buildFrequencyMap(projects: Project[]): Map<string, number> {
   return freq;
 }
 
-const KeywordBubbleChart = ({ projects, height = 500, onKeywordClick }: Props) => {
+const KeywordBubbleChart = ({
+  projects,
+  height = 500,
+  onKeywordClick,
+}: Props) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(0);
   const [nodes, setNodes] = useState<BubbleNode[]>([]);
@@ -80,20 +84,16 @@ const KeywordBubbleChart = ({ projects, height = 500, onKeywordClick }: Props) =
 
     simulationRef.current?.stop();
 
+    // Uses D3.js force directed graph
     const simulation = d3
       .forceSimulation(bubbleNodes)
-      .force("charge", d3.forceManyBody().strength(2))
+      .force("charge", d3.forceManyBody().strength(5))
       .force("center", d3.forceCenter(containerWidth / 2, height / 2))
       .force(
         "collision",
-        d3.forceCollide<BubbleNode>((d) => d.r + 2).strength(0.9)
+        d3.forceCollide<BubbleNode>((d) => d.r + 2).strength(0.6)
       )
       .on("tick", () => {
-        // Clamp every node inside the SVG bounds
-        for (const node of bubbleNodes) {
-          node.x = Math.max(node.r, Math.min(containerWidth - node.r, node.x!));
-          node.y = Math.max(node.r, Math.min(height - node.r, node.y!));
-        }
         setNodes([...bubbleNodes]);
       })
       .on("end", () => {
@@ -109,7 +109,7 @@ const KeywordBubbleChart = ({ projects, height = 500, onKeywordClick }: Props) =
   return (
     <ChartWrapper ref={wrapperRef}>
       {containerWidth > 0 && (
-        <svg width={containerWidth} height={height}>
+        <svg width={containerWidth} height={height} overflow="visible">
           {nodes.map((node) => {
             const color = (node as BubbleNode & { color: string }).color;
             const isDark =

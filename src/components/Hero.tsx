@@ -69,7 +69,6 @@ const Hero = ({
       <ChartContainer>
         <KeywordBubbleChart
           projects={projects}
-          height={500}
           onKeywordClick={onKeywordClick}
         />
         <p>Click a keyword to search!</p>
@@ -108,7 +107,7 @@ const ChartContainer = styled.div`
   text-align: center;
   font-size: 1.2rem;
   color: gray;
-  gap: 0.5rem;
+  gap: 0.75rem;
 
   @media (max-width: 600px) {
     display: none;
