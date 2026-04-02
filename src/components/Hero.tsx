@@ -3,7 +3,7 @@ import { Link } from "../styles/GlobalStyles";
 import type { Project } from "../types/project";
 import KeywordBubbleChart from "./KeywordBubbleChart";
 
-const Instructions = ({
+const Hero = ({
   projects,
   onKeywordClick,
 }: {
@@ -100,12 +100,15 @@ const TextContent = styled.div`
 `;
 
 const ChartContainer = styled.div`
+  display: flex;
+  flex-flow: column nowrap;
   width: 600px;
   flex-shrink: 0;
-  margin: 2rem auto;
+  margin: 1.75rem auto;
   text-align: center;
   font-size: 1.2rem;
   color: gray;
+  gap: 0.5rem;
 
   @media (max-width: 600px) {
     display: none;
@@ -121,4 +124,4 @@ const ParentContainer = styled.div`
   margin: auto;
 `;
 
-export default Instructions;
+export default Hero;
