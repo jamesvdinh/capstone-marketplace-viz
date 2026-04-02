@@ -10,7 +10,12 @@ interface FilterProps {
   setSearchInput: (value: string) => void;
 }
 
-const FilterOptions = ({ projects, setDisplayedProjects, searchInput, setSearchInput }: FilterProps) => {
+const FilterOptions = ({
+  projects,
+  setDisplayedProjects,
+  searchInput,
+  setSearchInput,
+}: FilterProps) => {
   const [advisorDeptInput, setAdvisorDeptInput] = useState("");
   const [acceptingStudentsFromInput, setAcceptingStudentsFromInput] =
     useState("");
@@ -48,7 +53,7 @@ const FilterOptions = ({ projects, setDisplayedProjects, searchInput, setSearchI
     if (searchInput) {
       const searchRegex = new RegExp(
         "\\b" + searchInput.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
-        "i"
+        "i",
       );
 
       filtered = filtered.filter((project) => {
@@ -57,7 +62,6 @@ const FilterOptions = ({ projects, setDisplayedProjects, searchInput, setSearchI
           test(project.projectId.toString()) ||
           test(project.name) ||
           project.keywords.some(test) ||
-          test(project.IOR) ||
           project.advisorNames.some(test) ||
           test(project.affiliation)
         );
@@ -68,15 +72,17 @@ const FilterOptions = ({ projects, setDisplayedProjects, searchInput, setSearchI
       filtered = filtered.filter((project) =>
         project.ucbAffiliation
           .toLowerCase()
-          .includes(advisorDeptInput.toLowerCase())
+          .includes(advisorDeptInput.toLowerCase()),
       );
     }
 
     if (acceptingStudentsFromInput) {
       filtered = filtered.filter((project) =>
         project.acceptingMajors.some((major) =>
-          major.toLowerCase().includes(acceptingStudentsFromInput.toLowerCase())
-        )
+          major
+            .toLowerCase()
+            .includes(acceptingStudentsFromInput.toLowerCase()),
+        ),
       );
     }
 

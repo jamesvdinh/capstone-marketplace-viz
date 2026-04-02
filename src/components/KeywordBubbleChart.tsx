@@ -45,7 +45,7 @@ const KeywordBubbleChart = ({
   const [nodes, setNodes] = useState<BubbleNode[]>([]);
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
   const simulationRef = useRef<d3.Simulation<BubbleNode, undefined> | null>(
-    null
+    null,
   );
 
   // Measure container width responsively
@@ -91,7 +91,7 @@ const KeywordBubbleChart = ({
       .force("center", d3.forceCenter(containerWidth / 2, height / 2))
       .force(
         "collision",
-        d3.forceCollide<BubbleNode>((d) => d.r + 2).strength(0.6)
+        d3.forceCollide<BubbleNode>((d) => d.r + 2).strength(0.6),
       )
       .on("tick", () => {
         setNodes([...bubbleNodes]);

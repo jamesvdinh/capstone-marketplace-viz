@@ -37,16 +37,16 @@ export const parseProjectData = (raw: any): Project => {
     IOR: String(raw["Instructor of Record"] || ""),
     eecsComponentDesc: String(raw["EECS Component Description"] || ""),
     additionalUcbFaculty: String(
-      raw["Names of Additional UCB Faculty Involved"] || ""
+      raw["Names of Additional UCB Faculty Involved"] || "",
     ),
     additionalUcbFacultyEmails: String(
-      raw["Emails of Additional UCB Faculty Involved"] || ""
+      raw["Emails of Additional UCB Faculty Involved"] || "",
     ),
     additionalPeopleEmails: String(
-      raw["Emails of Additional Involved People"] || ""
+      raw["Emails of Additional Involved People"] || "",
     ),
     additionalDesc: String(
-      raw["Anything else you would like to share with us?"] || ""
+      raw["Anything else you would like to share with us?"] || "",
     ),
     additionalInfo: String(raw["Additional Info/Notes"] || ""),
   };

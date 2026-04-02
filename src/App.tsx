@@ -13,7 +13,7 @@ function App() {
   const [searchInput, setSearchInput] = useState("");
   const handleProjectsLoaded = useCallback(
     (p: Project[]) => setProjects(p),
-    []
+    [],
   );
   const handleSearchInput = useCallback((v: string) => setSearchInput(v), []);
   const handleKeywordClick = useCallback((keyword: string) => {

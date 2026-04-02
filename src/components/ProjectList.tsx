@@ -105,7 +105,7 @@ const ProjectList = ({
         const data = await response.json();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const formattedData: Project[] = data.map((item: any) =>
-          parseProjectData(item)
+          parseProjectData(item),
         );
         setProjects(formattedData);
         setDisplayedProjects(formattedData);
@@ -115,7 +115,7 @@ const ProjectList = ({
           JSON.stringify({
             data: formattedData,
             timestamp: Date.now(),
-          })
+          }),
         );
         toast.success("Projects up to date!", {
           style: {
