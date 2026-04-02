@@ -145,7 +145,7 @@ const ProjectList = ({
   }, [forceRefresh, onProjectsLoaded]);
 
   return (
-    <ParentContainer>
+    <ParentContainer id="project-list">
       {loading && (
         <LoadingContainer>
           <LoadingIcon />

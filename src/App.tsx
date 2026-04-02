@@ -11,16 +11,29 @@ import type { Project } from "./types/project";
 function App() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [searchInput, setSearchInput] = useState("");
-  const handleProjectsLoaded = useCallback((p: Project[]) => setProjects(p), []);
+  const handleProjectsLoaded = useCallback(
+    (p: Project[]) => setProjects(p),
+    []
+  );
   const handleSearchInput = useCallback((v: string) => setSearchInput(v), []);
+  const handleKeywordClick = useCallback((keyword: string) => {
+    setSearchInput(keyword);
+    document
+      .getElementById("project-list")
+      ?.scrollIntoView({ behavior: "smooth" });
+  }, []);
 
   return (
     <>
       <GlobalStyles />
       <Toaster position="top-center" reverseOrder={false} />
       <ParentContainer>
-        <Instructions projects={projects} onKeywordClick={handleSearchInput} />
-        <ProjectList onProjectsLoaded={handleProjectsLoaded} searchInput={searchInput} setSearchInput={handleSearchInput} />
+        <Instructions projects={projects} onKeywordClick={handleKeywordClick} />
+        <ProjectList
+          onProjectsLoaded={handleProjectsLoaded}
+          searchInput={searchInput}
+          setSearchInput={handleSearchInput}
+        />
       </ParentContainer>
     </>
   );
