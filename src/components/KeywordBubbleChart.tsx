@@ -45,7 +45,7 @@ const KeywordBubbleChart = ({
   const [nodes, setNodes] = useState<BubbleNode[]>([]);
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
   const simulationRef = useRef<d3.Simulation<BubbleNode, undefined> | null>(
-    null,
+    null
   );
 
   // Measure container width responsively
@@ -91,7 +91,7 @@ const KeywordBubbleChart = ({
       .force("center", d3.forceCenter(containerWidth / 2, height / 2))
       .force(
         "collision",
-        d3.forceCollide<BubbleNode>((d) => d.r + 2).strength(0.6),
+        d3.forceCollide<BubbleNode>((d) => d.r + 2).strength(0.6)
       )
       .on("tick", () => {
         setNodes([...bubbleNodes]);
@@ -140,21 +140,40 @@ const KeywordBubbleChart = ({
                   strokeWidth={1.5}
                   fillOpacity={0.85}
                 />
-                {node.r >= 22 && (
-                  <text
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    fontSize={Math.min(node.r * 0.32, 13)}
-                    fill={isDark ? "#fff" : "#1a3a5c"}
-                    fontWeight={600}
-                    pointerEvents="none"
-                    style={{ userSelect: "none" }}
-                  >
-                    {node.keyword.length > 12
-                      ? node.keyword.slice(0, 11) + "…"
-                      : node.keyword}
-                  </text>
-                )}
+                {node.r >= 22 &&
+                  (() => {
+                    const boxSize = node.r * 1.3;
+                    return (
+                      <foreignObject
+                        x={-boxSize / 2}
+                        y={-boxSize / 2}
+                        width={boxSize}
+                        height={boxSize}
+                        pointerEvents="none"
+                        overflow={"visible"}
+                      >
+                        <div
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            textAlign: "center",
+                            fontSize: Math.min(node.r * 0.32, 13),
+                            fontWeight: 600,
+                            color: isDark ? "#fff" : "#1a3a5c",
+                            userSelect: "none",
+                            lineHeight: 1.2,
+                          }}
+                        >
+                          <span style={{ overflowWrap: "break-word" }}>
+                            {node.keyword}
+                          </span>
+                        </div>
+                      </foreignObject>
+                    );
+                  })()}
               </g>
             );
           })}
