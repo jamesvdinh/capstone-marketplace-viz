@@ -218,7 +218,7 @@ const ProjectList = ({
 const ParentContainer = styled.div`
   display: flex;
   flex-flow: column nowrap;
-  margin: 2rem auto;
+  margin: 2rem auto 10rem;
   max-width: 1200px;
   justify-content: left;
 `;

@@ -119,7 +119,7 @@ const Thumbnail = styled.img<{ $viewMode: string; $hasThumb: boolean }>`
   object-fit: ${(props) => (props.$hasThumb ? "cover" : "contain")};
   padding: ${(props) => (props.$hasThumb ? "0" : "1rem")};
   text-align: center;
-  background-color: ${(props) => (props.$hasThumb ? "#f0f0f0" : "#d7d7d7")};
+  background-color: ${(props) => (props.$hasThumb ? "#f0f0f0" : "white")};
 `;
 
 const Title = styled.h2`
