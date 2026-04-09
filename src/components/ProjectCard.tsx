@@ -23,6 +23,7 @@ const ProjectCard = ({ project, viewMode }: ProjectCardProps) => {
         $viewMode={viewMode}
         $hasThumb={!!project.thumbnail}
         src={project.thumbnail ? project.thumbnail : capstoneLogo}
+        loading="lazy"
         alt="Project Thumbnail"
       />
       <ContentContainer>

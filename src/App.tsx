@@ -4,6 +4,7 @@ import "./styles/styles.css";
 import ProjectList from "./components/ProjectList";
 import styled from "styled-components";
 import Hero from "./components/Hero";
+import Footer from "./components/Footer";
 import { Toaster } from "react-hot-toast";
 import { useCallback, useState } from "react";
 import type { Project } from "./types/project";
@@ -35,6 +36,7 @@ function App() {
           setSearchInput={handleSearchInput}
         />
       </ParentContainer>
+      <Footer />
     </>
   );
 }
@@ -43,5 +45,6 @@ const ParentContainer = styled.div`
   justify-content: center;
   padding: 2rem;
 `;
+
 
 export default App;

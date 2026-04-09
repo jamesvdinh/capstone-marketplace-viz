@@ -3,7 +3,8 @@ import styled, { createGlobalStyle } from "styled-components";
 const GlobalStyles = createGlobalStyle`
   body {
     margin: 0;
-    font-family: 'Arial', sans-serif;
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
     background-color: #f5f5f5;
   }
 
