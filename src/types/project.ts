@@ -17,6 +17,7 @@ export type Project = {
   additionalPeopleEmails: string;
   additionalDesc: string;
   additionalInfo: string;
+  thumbnail: string;
 };
 
 export const projectScopes = {

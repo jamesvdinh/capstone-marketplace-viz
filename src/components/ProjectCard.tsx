@@ -1,4 +1,5 @@
 import type { Project } from "../types/project";
+import capstoneLogo from "../assets/Long Wrapped Logo (resized).png";
 import styled, { css } from "styled-components";
 import * as palette from ".././styles/GlobalStyles";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -20,7 +21,8 @@ const ProjectCard = ({ project, viewMode }: ProjectCardProps) => {
       <ProjectId>ID: {project.projectId}</ProjectId>
       <Thumbnail
         $viewMode={viewMode}
-        src="https://static.vecteezy.com/system/resources/thumbnails/050/798/644/small/detailed-view-of-interlocking-metallic-gears-in-motion-showcasing-the-complexity-and-precision-of-mechanical-engineering-and-machinery-photo.jpeg"
+        $hasThumb={!!project.thumbnail}
+        src={project.thumbnail ? project.thumbnail : capstoneLogo}
         alt="Project Thumbnail"
       />
       <ContentContainer>
@@ -63,9 +65,7 @@ const ParentContainer = styled.a<{ $viewMode: string }>`
   line-height: 1.4;
   animation: fade-in 0.3s ease;
   position: relative;
-  transition:
-    transform 0.3s ease-in-out,
-    box-shadow 0.3s ease-in-out;
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
 
   &:hover {
     transform: translateY(-5px);
@@ -112,19 +112,13 @@ const ProjectId = styled.div`
   z-index: 10;
 `;
 
-const Thumbnail = styled.img<{ $viewMode: string }>`
+const Thumbnail = styled.img<{ $viewMode: string; $hasThumb: boolean }>`
   width: ${(props) => (props.$viewMode === "grid" ? "100%" : "200px")};
   height: ${(props) => (props.$viewMode === "grid" ? "150px" : "150px")};
-  object-fit: cover;
+  object-fit: ${(props) => (props.$hasThumb ? "cover" : "contain")};
+  padding: ${(props) => (props.$hasThumb ? "0" : "1rem")};
   text-align: center;
-  background-color: #f0f0f0;
-
-  /* Mobile Override */
-  @media (max-width: 480px) {
-    width: 100px;
-    max-width: none;
-    height: 80px; /* Shrink height slightly for mobile */
-  }
+  background-color: ${(props) => (props.$hasThumb ? "#f0f0f0" : "#d7d7d7")};
 `;
 
 const Title = styled.h2`
