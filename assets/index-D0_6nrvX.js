@@ -652,7 +652,7 @@ If it declares any Font Awesome CSS pseudo-elements, they will not be rendered a
   object-fit: ${l=>l.$hasThumb?"cover":"contain"};
   padding: ${l=>l.$hasThumb?"0":"1rem"};
   text-align: center;
-  background-color: ${l=>l.$hasThumb?"#f0f0f0":"#d7d7d7"};
+  background-color: ${l=>l.$hasThumb?"#f0f0f0":"white"};
 `,y82=x2.h2`
   font-size: 1rem;
   margin: 0.5em 0;
@@ -922,7 +922,7 @@ to {
             ${v?.toLocaleTimeString()}`:"n/a"]}),P.jsx(H52,{onClick:()=>{h(!0),M(D=>!D)},children:"Refresh Projects"}),P.jsxs(R52,{children:[P.jsx("button",{className:C==="grid"?"active":"",onClick:()=>N("grid"),children:P.jsx(o8,{icon:["fas","th-large"]})}),P.jsx("button",{className:C==="list"?"active":"",onClick:()=>N("list"),children:P.jsx(o8,{icon:["fas","list"]})})]})]})]}),P.jsx(E52,{}),P.jsx(D52,{$viewMode:C,children:!d&&u.length===0?P.jsx("p",{children:"No projects found."}):u.map(D=>P.jsx("li",{children:P.jsx(h82,{project:D,viewMode:C})},D.projectId))}),P.jsx(F52,{$show:b,onClick:E,children:P.jsx(o8,{icon:["fas","arrow-up"]})})]})},T52=x2.div`
   display: flex;
   flex-flow: column nowrap;
-  margin: 2rem auto;
+  margin: 2rem auto 10rem;
   max-width: 1200px;
   justify-content: left;
 `,_52=x2.div`
