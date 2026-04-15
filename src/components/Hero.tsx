@@ -13,7 +13,7 @@ const Hero = ({
   return (
     <ParentContainer>
       <TextContent>
-        <h2>Explore the Capstone Project Marketplace!</h2>
+        <h1>Explore the Capstone Project Marketplace!</h1>
         <p>
           Browse available projects to find opportunities that match your
           interests and goals.
@@ -26,20 +26,12 @@ const Hero = ({
           transferable across career paths.
         </p>
         <p>
-          As you begin reviewing opportunities in the Project Marketplace below,
-          start by selecting the tab for your home department{" "}
-          <span className="font-bold">
-            (e.g., BIOE Project List, CEE Project List
-          </span>
-          , etc.).These lists contain the projects available to you.
-        </p>
-        <p>
-          Within your department's list, consider key factors such as{" "}
+          When choosing a project, consider key factors such as{" "}
           <span className="font-bold">
             keywords, project scope, and affiliation
           </span>{" "}
           (faculty-led vs. industry-sponsored). For more in-depth information,
-          be sure to click on individual project links to explore detailed
+          be sure to click on the individual project card to find detailed
           descriptions of the work involved.
         </p>
         <p className="font-bold">
@@ -57,7 +49,7 @@ const Hero = ({
           </li>
         </ol>
         <p>
-          Jump in below or go here for a version to search or filter:{" "}
+          Jump in below or go here for the project source:{" "}
           <Link
             href="https://docs.google.com/spreadsheets/d/1H6_iAmTeatsI0fKzxLVOAIRjzf-d03d9fq5IhRXKhCk/edit?gid=0#gid=0"
             target="_blank"
@@ -84,9 +76,9 @@ const TextContent = styled.div`
   flex: 1 1 0;
   min-width: 550px;
 
-  h2 {
+  h1 {
     font-weight: bold;
-    font-size: 1.5rem;
+    font-size: 2rem;
   }
 
   p {

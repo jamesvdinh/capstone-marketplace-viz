@@ -208,7 +208,11 @@ const ProjectList = ({
           ))
         )}
       </ListContainer>
-      <ScrollTopButton $show={showScrollTop} onClick={scrollToTop}>
+      <ScrollTopButton
+        $show={showScrollTop}
+        onClick={scrollToTop}
+        data-tooltip="Scroll to top"
+      >
         <FontAwesomeIcon icon={["fas", "arrow-up"]} />
       </ScrollTopButton>
     </ParentContainer>
@@ -366,6 +370,28 @@ const ScrollTopButton = styled.button<{ $show: boolean }>`
   &:hover {
     transform: translateY(-5px);
     filter: brightness(0.9);
+  }
+
+  &::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    right: calc(100% + 10px);
+    z-index: 2;
+    background-color: #333;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    white-space: nowrap;
+    font-size: 14px;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease;
+  }
+
+  &:hover::after {
+    opacity: 1;
+    visibility: visible;
   }
 `;
 

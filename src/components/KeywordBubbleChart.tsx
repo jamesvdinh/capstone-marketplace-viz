@@ -44,6 +44,7 @@ const KeywordBubbleChart = ({
   const [containerWidth, setContainerWidth] = useState(0);
   const [nodes, setNodes] = useState<BubbleNode[]>([]);
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
+  const [hoveredKeyword, setHoveredKeyword] = useState<string | null>(null);
   const simulationRef = useRef<d3.Simulation<BubbleNode, undefined> | null>(
     null
   );
@@ -120,9 +121,15 @@ const KeywordBubbleChart = ({
                 transform={`translate(${node.x ?? containerWidth / 2}, ${
                   node.y ?? height / 2
                 })`}
-                style={{ cursor: "pointer" }}
+                style={{
+                  cursor: "pointer",
+                  opacity:
+                    hoveredKeyword && hoveredKeyword !== node.keyword ? 0.3 : 1,
+                  transition: "opacity 0.2s ease",
+                }}
                 onClick={() => onKeywordClick?.(node.keyword)}
                 onMouseEnter={() => {
+                  setHoveredKeyword(node.keyword);
                   setTooltip({
                     nodeX: node.x ?? 0,
                     nodeY: node.y ?? 0,
@@ -131,7 +138,10 @@ const KeywordBubbleChart = ({
                     count: node.count,
                   });
                 }}
-                onMouseLeave={() => setTooltip(null)}
+                onMouseLeave={() => {
+                  setHoveredKeyword(null);
+                  setTooltip(null);
+                }}
               >
                 <circle
                   r={node.r}
