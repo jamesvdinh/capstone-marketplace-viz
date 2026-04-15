@@ -15,6 +15,38 @@ type ProjectCardProps = {
   viewMode: "grid" | "list";
 };
 
+const affiliationColors = {
+  bioe: { bg: "#d0e8ff", text: "#1a4a7a" },
+  cee: { bg: "#d4f0d4", text: "#1a5c1a" },
+  eecs: { bg: "#fde8c8", text: "#7a3d00" },
+  ieor: { bg: "#e8d4f8", text: "#4a1a7a" },
+  me: { bg: "#ffd6d6", text: "#7a1a1a" },
+  mse: { bg: "#d6f5f0", text: "#1a5c50" },
+  ne: { bg: "#fff3cc", text: "#7a5500" },
+  external: { bg: "#f0d6e8", text: "#6a1a4a" },
+};
+
+function getAffiliationChip(
+  ucbAffiliation: string,
+  affiliation: string
+): { label: string; color: (typeof affiliationColors)["bioe"] } | null {
+  if (ucbAffiliation == "External Organization") {
+    const regex = /-\s*(.*)/;
+
+    return {
+      label: affiliation.match(regex)?.[1] || affiliation,
+      color: affiliationColors.external,
+    };
+  } else {
+    const lowerAffiliation = ucbAffiliation.toLowerCase();
+    const color =
+      affiliationColors[lowerAffiliation as keyof typeof affiliationColors] ||
+      affiliationColors.external;
+    return { label: ucbAffiliation, color };
+  }
+  return null;
+}
+
 const ProjectCard = ({ project, viewMode }: ProjectCardProps) => {
   return (
     <ParentContainer $viewMode={viewMode} href={project.url} target="_blank">
@@ -37,6 +69,17 @@ const ProjectCard = ({ project, viewMode }: ProjectCardProps) => {
           </span>
         </AdvisorContainer>
         <KeywordContainer>
+          {(() => {
+            const chip = getAffiliationChip(
+              project.ucbAffiliation,
+              project.affiliation
+            );
+            return chip ? (
+              <AffiliationChip $bg={chip.color.bg} $text={chip.color.text}>
+                {chip.label}
+              </AffiliationChip>
+            ) : null;
+          })()}
           {project.keywords.length > 0 &&
             project.keywords.map((keyword, i) => (
               <Keyword key={i}>{keyword}</Keyword>
@@ -145,6 +188,15 @@ const KeywordContainer = styled.div`
   display: flex;
   flex-flow: row wrap;
   gap: 5px;
+`;
+
+const AffiliationChip = styled.div<{ $bg: string; $text: string }>`
+  background-color: ${(p) => p.$bg};
+  color: ${(p) => p.$text};
+  padding: 0.25rem 0.5rem;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
 `;
 
 const Keyword = styled.div`
