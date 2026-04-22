@@ -8,7 +8,7 @@ function Footer() {
         <Logo src={fungInstituteLogo} />
         <span>
           UC Berkeley | Fung Institute for Engineering Leadership | College of
-          Engineering | 2025-26
+          Engineering | 2026-27
         </span>
       </ParentContainer>
     </FooterWrapper>
@@ -23,9 +23,9 @@ const ParentContainer = styled.div`
   display: flex;
   flex-flow: row wrap;
   align-items: center;
-  max-width: 1280px;
+  max-width: 1200px;
   margin: auto;
-  gap: 10px;
+  gap: 30px;
 `;
 
 const FooterWrapper = styled.footer`
