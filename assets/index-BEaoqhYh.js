@@ -1128,15 +1128,15 @@ to {
   align-items: flex-start;
   max-width: 1200px;
   margin: auto;
-`,Hl2="/capstone-marketplace-viz/assets/FI_Horizontal_White_transparent-VCp9FeqS.png";function Ol2(){return P.jsx(ql2,{children:P.jsxs(Fl2,{children:[P.jsx(Ul2,{src:Hl2}),P.jsx("span",{children:"UC Berkeley | Fung Institute for Engineering Leadership | College of Engineering | 2025-26"})]})})}const Ul2=x2.img`
+`,Hl2="/capstone-marketplace-viz/assets/FI_Horizontal_White_transparent-VCp9FeqS.png";function Ol2(){return P.jsx(ql2,{children:P.jsxs(Fl2,{children:[P.jsx(Ul2,{src:Hl2}),P.jsx("span",{children:"UC Berkeley | Fung Institute for Engineering Leadership | College of Engineering | 2026-27"})]})})}const Ul2=x2.img`
   max-height: 65px;
 `,Fl2=x2.div`
   display: flex;
   flex-flow: row wrap;
   align-items: center;
-  max-width: 1280px;
+  max-width: 1200px;
   margin: auto;
-  gap: 10px;
+  gap: 30px;
 `,ql2=x2.footer`
   width: 100%;
   background-color: #002676;
