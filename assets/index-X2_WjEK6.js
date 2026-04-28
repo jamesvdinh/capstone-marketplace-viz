@@ -647,8 +647,8 @@ If it declares any Font Awesome CSS pseudo-elements, they will not be rendered a
   text-align: center;
   z-index: 10;
 `,x82=x2.img`
-  width: ${l=>l.$viewMode==="grid"?"100%":"200px"};
-  height: ${l=>(l.$viewMode==="grid","150px")};
+  width: ${l=>l.$viewMode==="grid"?"100%":"250px"};
+  height: 150px;
   object-fit: ${l=>l.$hasThumb?"cover":"contain"};
   padding: ${l=>l.$hasThumb?"0":"1rem"};
   text-align: center;
