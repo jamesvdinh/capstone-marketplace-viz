@@ -157,8 +157,8 @@ const ProjectId = styled.div`
 `;
 
 const Thumbnail = styled.img<{ $viewMode: string; $hasThumb: boolean }>`
-  width: ${(props) => (props.$viewMode === "grid" ? "100%" : "200px")};
-  height: ${(props) => (props.$viewMode === "grid" ? "150px" : "150px")};
+  width: ${(props) => (props.$viewMode === "grid" ? "100%" : "250px")};
+  height: 150px;
   object-fit: ${(props) => (props.$hasThumb ? "cover" : "contain")};
   padding: ${(props) => (props.$hasThumb ? "0" : "1rem")};
   text-align: center;
