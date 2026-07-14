@@ -641,7 +641,7 @@ If it declares any Font Awesome CSS pseudo-elements, they will not be rendered a
   color: white;
   background-color: rgba(0, 0, 0, 0.5); /* Opaque white */
   // backdrop-filter: blur(4px); /* Optional: adds a nice glass effect */
-  border-radius: 0 0 15px 0;
+  border-radius: 0 0 5px 0;
   padding: 4px 8px;
   min-width: 30px;
   text-align: center;
