@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { Project } from "../types/project";
 import capstoneLogo from "../assets/Long Wrapped Logo (resized).png";
 import styled, { css } from "styled-components";
@@ -31,32 +32,59 @@ function getAffiliationChip(
   affiliation: string
 ): { label: string; color: (typeof affiliationColors)["bioe"] } | null {
   if (ucbAffiliation == "External Organization") {
-    const regex = /-\s*(.*)/;
-
     return {
-      label: affiliation.match(regex)?.[1] || affiliation,
+      label: affiliation || "External",
       color: affiliationColors.external,
     };
-  } else {
-    const lowerAffiliation = ucbAffiliation.toLowerCase();
-    const color =
-      affiliationColors[lowerAffiliation as keyof typeof affiliationColors] ||
-      affiliationColors.external;
-    return { label: ucbAffiliation, color };
   }
-  return null;
+
+  // ucbAffiliation is formatted like "UCB - EECS"; extract the dept code
+  const deptCode = ucbAffiliation.replace(/^UCB\s*-\s*/i, "").trim();
+  const color =
+    affiliationColors[deptCode.toLowerCase() as keyof typeof affiliationColors] ||
+    affiliationColors.external;
+  return { label: deptCode || ucbAffiliation, color };
 }
+
+const ProjectThumbnail = ({
+  project,
+  viewMode,
+}: {
+  project: Project;
+  viewMode: "grid" | "list";
+}) => {
+  const [imgSrc, setImgSrc] = useState(
+    project.thumbnail || project.thumbnailFallback || capstoneLogo
+  );
+
+  const handleImgError = () => {
+    if (imgSrc === project.thumbnail && project.thumbnailFallback) {
+      setImgSrc(project.thumbnailFallback);
+    } else if (imgSrc !== capstoneLogo) {
+      setImgSrc(capstoneLogo);
+    }
+  };
+
+  return (
+    <Thumbnail
+      $viewMode={viewMode}
+      $hasThumb={imgSrc !== capstoneLogo}
+      src={imgSrc}
+      loading="lazy"
+      alt="Project Thumbnail"
+      onError={handleImgError}
+    />
+  );
+};
 
 const ProjectCard = ({ project, viewMode }: ProjectCardProps) => {
   return (
     <ParentContainer $viewMode={viewMode} href={project.url} target="_blank">
       <ProjectId>ID: {project.projectId}</ProjectId>
-      <Thumbnail
-        $viewMode={viewMode}
-        $hasThumb={!!project.thumbnail}
-        src={project.thumbnail ? project.thumbnail : capstoneLogo}
-        loading="lazy"
-        alt="Project Thumbnail"
+      <ProjectThumbnail
+        key={`${project.thumbnail}|${project.thumbnailFallback}`}
+        project={project}
+        viewMode={viewMode}
       />
       <ContentContainer>
         <Title title={project.name}>{project.name}</Title>

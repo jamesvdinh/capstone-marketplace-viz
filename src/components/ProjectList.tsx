@@ -15,7 +15,7 @@ import toast from "react-hot-toast";
 library.add(fas, far);
 
 const API_URL =
-  "https://script.google.com/macros/s/AKfycbxATY_2WcMndUutAJxMFCAW9M2C5Z--96FIN0rdHZ1_p7RBLkyDnpMb0nHjt5P_BU0Neg/exec";
+  "https://script.google.com/macros/s/AKfycbxHMdinYiTJ4gHDpe7hL6AxjFJWU-U_PFoFdrwAg3j4n6OYIQg-XeVHIea1Es9QOacOLg/exec";
 
 const CACHE_KEY = "marketplace_projects_cache";
 const CACHE_EXPIRATION = 30 * 60 * 1000; // 30 mins
@@ -94,6 +94,7 @@ const ProjectList = ({
         setDisplayedProjects(data);
         onProjectsLoaded?.(data);
         setLoading(false);
+        console.log(data);
 
         // once cache is loaded, check if it's still fresh. If so, skip fetching
         if (Date.now() - timestamp < CACHE_EXPIRATION) {
