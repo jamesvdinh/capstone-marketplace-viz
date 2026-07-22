@@ -61,6 +61,14 @@ const ProjectList = ({
   }, []);
 
   useEffect(() => {
+    document.body.style.overflow = loading ? "hidden" : "";
+
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [loading]);
+
+  useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth <= 480) {
         setViewMode("grid");
@@ -152,6 +160,7 @@ const ProjectList = ({
       {loading && (
         <LoadingContainer>
           <LoadingIcon />
+          <LoadingText>Loading projects…</LoadingText>
         </LoadingContainer>
       )}
       <FilterOptions
@@ -382,8 +391,10 @@ const LoadingContainer = styled.div`
   width: 100vw;
   height: 100vh;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
+  gap: 0.75rem;
   background: rgba(255, 255, 255, 0.8);
   z-index: 9999;
 `;
@@ -404,6 +415,12 @@ const LoadingIcon = styled.div`
       transform: rotate(360deg);
     }
   }
+`;
+
+const LoadingText = styled.p`
+  margin: 0;
+  font-size: 0.875rem;
+  color: ${palette.accent};
 `;
 
 const ScrollTopButton = styled.button<{ $show: boolean }>`
