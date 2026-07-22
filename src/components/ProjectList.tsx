@@ -94,7 +94,6 @@ const ProjectList = ({
         setDisplayedProjects(data);
         onProjectsLoaded?.(data);
         setLoading(false);
-        console.log(data);
 
         // once cache is loaded, check if it's still fresh. If so, skip fetching
         if (Date.now() - timestamp < CACHE_EXPIRATION) {
@@ -297,7 +296,7 @@ const RefreshButton = styled.button`
   padding: 5px 10px;
   border: none;
   border-radius: 8px;
-  background-color: gray;
+  background-color: ${palette.accent};
   color: white;
   font-size: 1rem;
   cursor: pointer;

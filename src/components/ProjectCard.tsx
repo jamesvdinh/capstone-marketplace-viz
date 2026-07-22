@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { Project } from "../types/project";
 import capstoneLogo from "../assets/Long Wrapped Logo (resized).png";
-import styled, { css } from "styled-components";
+import styled, { css, keyframes } from "styled-components";
 import * as palette from ".././styles/GlobalStyles";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { library } from "@fortawesome/fontawesome-svg-core";
@@ -41,8 +41,9 @@ function getAffiliationChip(
   // ucbAffiliation is formatted like "UCB - EECS"; extract the dept code
   const deptCode = ucbAffiliation.replace(/^UCB\s*-\s*/i, "").trim();
   const color =
-    affiliationColors[deptCode.toLowerCase() as keyof typeof affiliationColors] ||
-    affiliationColors.external;
+    affiliationColors[
+      deptCode.toLowerCase() as keyof typeof affiliationColors
+    ] || affiliationColors.external;
   return { label: deptCode || ucbAffiliation, color };
 }
 
@@ -56,8 +57,18 @@ const ProjectThumbnail = ({
   const [imgSrc, setImgSrc] = useState(
     project.thumbnail || project.thumbnailFallback || capstoneLogo
   );
+  const [loaded, setLoaded] = useState(false);
+
+  // Cached images can be `complete` the instant the node mounts, before any
+  // load event would fire, which would otherwise leave the skeleton stuck.
+  const checkAlreadyLoaded = (node: HTMLImageElement | null) => {
+    if (node?.complete) {
+      setLoaded(true);
+    }
+  };
 
   const handleImgError = () => {
+    setLoaded(false);
     if (imgSrc === project.thumbnail && project.thumbnailFallback) {
       setImgSrc(project.thumbnailFallback);
     } else if (imgSrc !== capstoneLogo) {
@@ -66,14 +77,19 @@ const ProjectThumbnail = ({
   };
 
   return (
-    <Thumbnail
-      $viewMode={viewMode}
-      $hasThumb={imgSrc !== capstoneLogo}
-      src={imgSrc}
-      loading="lazy"
-      alt="Project Thumbnail"
-      onError={handleImgError}
-    />
+    <ThumbnailWrapper $viewMode={viewMode}>
+      {!loaded && <Skeleton />}
+      <Thumbnail
+        ref={checkAlreadyLoaded}
+        $hasThumb={imgSrc !== capstoneLogo}
+        $loaded={loaded}
+        src={imgSrc}
+        loading="lazy"
+        alt="Project Thumbnail"
+        onLoad={() => setLoaded(true)}
+        onError={handleImgError}
+      />
+    </ThumbnailWrapper>
   );
 };
 
@@ -184,13 +200,45 @@ const ProjectId = styled.div`
   z-index: 10;
 `;
 
-const Thumbnail = styled.img<{ $viewMode: string; $hasThumb: boolean }>`
+const ThumbnailWrapper = styled.div<{ $viewMode: string }>`
+  position: relative;
   width: ${(props) => (props.$viewMode === "grid" ? "100%" : "250px")};
   height: 150px;
+  flex-shrink: 0;
+  overflow: hidden;
+`;
+
+const shimmer = keyframes`
+  0% {
+    background-position: -400px 0;
+  }
+  100% {
+    background-position: 400px 0;
+  }
+`;
+
+const Skeleton = styled.div`
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, #eee 25%, #f5f5f5 37%, #eee 63%);
+  background-size: 800px 100%;
+  animation: ${shimmer} 1.4s ease infinite;
+`;
+
+const Thumbnail = styled.img<{ $hasThumb: boolean; $loaded: boolean }>`
+  width: 100%;
+  height: 100%;
   object-fit: ${(props) => (props.$hasThumb ? "cover" : "contain")};
   padding: ${(props) => (props.$hasThumb ? "0" : "1rem")};
-  text-align: center;
   background-color: ${(props) => (props.$hasThumb ? "#f0f0f0" : "white")};
+  opacity: ${(props) => (props.$loaded ? 1 : 0)};
+  transition: opacity 0.25s ease;
+
+  /* Centers the alt text (and browser's broken-image glyph) in the box */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 `;
 
 const Title = styled.h2`

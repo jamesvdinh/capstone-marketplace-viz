@@ -38,11 +38,17 @@ const extractDeptCode = (ucbAffiliation: string): string => {
 };
 
 // Form file-uploads land as Drive "open?id=" viewer links, which don't
-// render as an <img src>; rewrite to Drive's public thumbnail endpoint.
+// render as an <img src>. `drive.google.com/thumbnail` resolves those, but
+// its redirect response is sent as no-store/must-revalidate, so the browser
+// can never cache that hop and every page load re-hits Google's endpoint
+// for every project (and gets rate-limited under real project counts).
+// Its target, lh3.googleusercontent.com, is a stable, directly-fetchable
+// URL derived purely from the file id, and *is* cacheable (~24h) - build it
+// directly and skip the uncacheable redirect entirely.
 const resolveThumbnail = (driveUrl: string): string => {
   const match = driveUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/);
   return match
-    ? `https://drive.google.com/thumbnail?id=${match[1]}&sz=w600`
+    ? `https://lh3.googleusercontent.com/d/${match[1]}=w300`
     : driveUrl;
 };
 

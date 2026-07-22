@@ -51,10 +51,10 @@ const Hero = ({
         <p>
           Jump in below or go here for the project source:{" "}
           <Link
-            href="https://docs.google.com/spreadsheets/d/1H6_iAmTeatsI0fKzxLVOAIRjzf-d03d9fq5IhRXKhCk/edit?gid=0#gid=0"
+            href="https://docs.google.com/spreadsheets/d/1Nh4dJ6ZEqWIScWII1PBAqCHVhhOLEJPzbG8grpoBFag/edit?usp=sharing"
             target="_blank"
           >
-            AY25-26 Project Marketplace Overview.
+            AY26-27 Project Marketplace Overview.
           </Link>
         </p>
       </TextContent>
