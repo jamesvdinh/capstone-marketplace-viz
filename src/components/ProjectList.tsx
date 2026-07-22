@@ -193,7 +193,10 @@ const ProjectList = ({
       />
       <ListInfo>
         <span>
-          {displayedProjects.length} / {projects.length} projects shown
+          <CountChip>
+            {displayedProjects.length} / {projects.length}
+          </CountChip>{" "}
+          projects shown
         </span>
         <RefreshContainer>
           <RefreshButton
@@ -324,6 +327,16 @@ const ListInfo = styled.div`
   justify-content: space-between;
   align-items: end;
   gap: 1rem;
+`;
+
+const CountChip = styled.span`
+  display: inline-block;
+  background-color: #e2e2e2;
+  color: #000;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  padding: 2px 10px;
+  border-radius: 999px;
 `;
 
 const Separator = styled.hr`

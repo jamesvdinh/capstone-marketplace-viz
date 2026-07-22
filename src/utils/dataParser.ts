@@ -39,6 +39,13 @@ const findAdvisorNames = (raw: Record<string, unknown>): string[] => {
   return [advisor1, advisor2].filter((v) => v);
 };
 
+// The main "Accepting Student Applications from the following Departments"
+// field never lists EECS - EECS recruiting is captured by a separate
+// yes/no-style question instead, so it has to be folded in manually.
+const EECS_EXTERNAL_RECRUITING =
+  "Your project is recruiting EECS students and is an external organization. (We will be in touch with next steps.)";
+const EECS_LABEL = "Electrical Engineering and Computer Science (EECS)";
+
 // "UCB - EECS" -> "eecs"; "External Organization" -> ""
 const extractDeptCode = (ucbAffiliation: string): string => {
   const match = ucbAffiliation.match(/^UCB\s*-\s*(.+)$/i);
@@ -68,6 +75,20 @@ export const parseProjectData = (raw: any): Project => {
     /^Please supply a sample visual for this project/i
   );
 
+  const acceptingMajors = splitTags(
+    findValue(
+      raw,
+      /^Accepting Student Applications from the following Departments/i
+    )
+  );
+  const eecsRecruiting = findValue(raw, /^EECS Student Applications/i);
+  if (
+    eecsRecruiting === EECS_EXTERNAL_RECRUITING &&
+    !acceptingMajors.includes(EECS_LABEL)
+  ) {
+    acceptingMajors.push(EECS_LABEL);
+  }
+
   return {
     projectId: Number(raw["project_id"]),
     name: findValue(raw, /^Project Title/i),
@@ -76,12 +97,7 @@ export const parseProjectData = (raw: any): Project => {
     // Transform comma-separated strings into Arrays
     keywords: splitTags(findValue(raw, /^Keywords/i)),
     advisorNames: findAdvisorNames(raw),
-    acceptingMajors: splitTags(
-      findValue(
-        raw,
-        /^Accepting Student Applications from the following Departments/i
-      )
-    ),
+    acceptingMajors,
 
     // Standard strings
     affiliation: findValue(raw, /^Organization Name/i),
