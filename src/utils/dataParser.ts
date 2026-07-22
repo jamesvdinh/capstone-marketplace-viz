@@ -21,8 +21,16 @@ const splitTags = (
 // re-wrapped by Google Forms, so columns are located by a stable prefix
 // rather than an exact string match.
 const findValue = (raw: Record<string, unknown>, pattern: RegExp): string => {
-  const key = Object.keys(raw).find((k) => pattern.test(k));
-  return key ? String(raw[key] ?? "").trim() : "";
+  // Forms duplicates some questions across branches (e.g. a UCB-org vs.
+  // external-org advisor block) with near-identical titles that don't merge
+  // into one column in the Apps Script export. Take the first matching
+  // column that actually has a value, not just the first match.
+  const keys = Object.keys(raw).filter((k) => pattern.test(k));
+  for (const key of keys) {
+    const val = String(raw[key] ?? "").trim();
+    if (val) return val;
+  }
+  return "";
 };
 
 const findAdvisorNames = (raw: Record<string, unknown>): string[] => {
