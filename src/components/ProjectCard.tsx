@@ -1,7 +1,8 @@
 import { useState } from "react";
 import type { Project } from "../types/project";
 import capstoneLogo from "../assets/Long Wrapped Logo (resized).png";
-import styled, { css, keyframes } from "styled-components";
+import styled, { css } from "styled-components";
+import SkeletonBlock from "./Skeleton";
 import * as palette from ".././styles/GlobalStyles";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { library } from "@fortawesome/fontawesome-svg-core";
@@ -208,21 +209,10 @@ const ThumbnailWrapper = styled.div<{ $viewMode: string }>`
   overflow: hidden;
 `;
 
-const shimmer = keyframes`
-  0% {
-    background-position: -400px 0;
-  }
-  100% {
-    background-position: 400px 0;
-  }
-`;
-
-const Skeleton = styled.div`
+const Skeleton = styled(SkeletonBlock)`
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, #eee 25%, #f5f5f5 37%, #eee 63%);
-  background-size: 800px 100%;
-  animation: ${shimmer} 1.4s ease infinite;
+  border-radius: 0;
 `;
 
 const Thumbnail = styled.img<{ $hasThumb: boolean; $loaded: boolean }>`

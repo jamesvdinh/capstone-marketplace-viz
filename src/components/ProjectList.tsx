@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { Project } from "../types/project";
 import styled from "styled-components";
 import ProjectCard from "./ProjectCard";
+import SkeletonBlock from "./Skeleton";
 import * as palette from ".././styles/GlobalStyles";
 import { parseProjectData } from "../utils/dataParser";
 import FilterOptions from "./FilterOptions";
@@ -18,7 +19,7 @@ const API_URL =
   "https://script.google.com/macros/s/AKfycbxHMdinYiTJ4gHDpe7hL6AxjFJWU-U_PFoFdrwAg3j4n6OYIQg-XeVHIea1Es9QOacOLg/exec";
 
 const CACHE_KEY = "marketplace_projects_cache";
-const CACHE_EXPIRATION = 30 * 60 * 1000; // 30 mins
+const CACHE_EXPIRATION = 10 * 60 * 1000; // 10 mins
 
 const CACHE_REFRESH_KEY = "marketplace_projects_last_refresh";
 
@@ -198,7 +199,13 @@ const ProjectList = ({
       </ListInfo>
       <Separator />
       <ListContainer $viewMode={viewMode}>
-        {!loading && displayedProjects.length === 0 ? (
+        {loading && projects.length === 0 ? (
+          Array.from({ length: 8 }).map((_, i) => (
+            <li key={`skeleton-${i}`}>
+              <ProjectCardSkeleton viewMode={viewMode} />
+            </li>
+          ))
+        ) : !loading && displayedProjects.length === 0 ? (
           <p>No projects found.</p>
         ) : (
           displayedProjects.map((project) => (
@@ -218,6 +225,62 @@ const ProjectList = ({
     </ParentContainer>
   );
 };
+
+// Mirrors ProjectCard's layout/dimensions so there's no layout shift once
+// real cards replace these on load.
+const ProjectCardSkeleton = ({ viewMode }: { viewMode: "grid" | "list" }) => (
+  <SkeletonCard $viewMode={viewMode}>
+    <SkeletonThumbnail $viewMode={viewMode} />
+    <SkeletonContent>
+      <SkeletonBlock style={{ width: "85%", height: "1rem" }} />
+      <SkeletonAdvisorRow>
+        <SkeletonBlock style={{ width: 16, height: 16, borderRadius: "50%" }} />
+        <SkeletonBlock style={{ width: "40%", height: "0.75rem" }} />
+      </SkeletonAdvisorRow>
+      <SkeletonChipRow>
+        <SkeletonBlock style={{ width: 60, height: 20, borderRadius: 10 }} />
+        <SkeletonBlock style={{ width: 45, height: 20, borderRadius: 10 }} />
+        <SkeletonBlock style={{ width: 70, height: 20, borderRadius: 10 }} />
+      </SkeletonChipRow>
+    </SkeletonContent>
+  </SkeletonCard>
+);
+
+const SkeletonCard = styled.div<{ $viewMode: string }>`
+  display: flex;
+  flex-direction: ${(props) => (props.$viewMode === "grid" ? "column" : "row")};
+  border: 1px solid ${palette.borderColor};
+  border-radius: 5px;
+  overflow: hidden;
+  width: ${(props) => (props.$viewMode === "grid" ? "280px" : "100%")};
+  height: ${(props) => (props.$viewMode === "grid" ? "100%" : "auto")};
+`;
+
+const SkeletonThumbnail = styled(SkeletonBlock)<{ $viewMode: string }>`
+  width: ${(props) => (props.$viewMode === "grid" ? "100%" : "250px")};
+  height: 150px;
+  flex-shrink: 0;
+  border-radius: 0;
+`;
+
+const SkeletonContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0.75rem;
+  flex: 1;
+`;
+
+const SkeletonAdvisorRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 5px;
+`;
+
+const SkeletonChipRow = styled.div`
+  display: flex;
+  gap: 5px;
+`;
 
 const ParentContainer = styled.div`
   display: flex;
