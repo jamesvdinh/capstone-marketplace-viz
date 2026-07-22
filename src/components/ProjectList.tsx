@@ -23,6 +23,18 @@ const CACHE_EXPIRATION = 10 * 60 * 1000; // 10 mins
 
 const CACHE_REFRESH_KEY = "marketplace_projects_last_refresh";
 
+function formatRelativeTime(date: Date, now: number): string {
+  const diffSec = Math.round((now - date.getTime()) / 1000);
+  if (diffSec < 5) return "just now";
+  if (diffSec < 60) return `${diffSec} sec ago`;
+  const diffMin = Math.round(diffSec / 60);
+  if (diffMin < 60) return `${diffMin} min ago`;
+  const diffHour = Math.round(diffMin / 60);
+  if (diffHour < 24) return `${diffHour} hr ago`;
+  const diffDay = Math.round(diffHour / 24);
+  return `${diffDay} day${diffDay !== 1 ? "s" : ""} ago`;
+}
+
 const ProjectList = ({
   onProjectsLoaded,
   searchInput,
@@ -40,6 +52,7 @@ const ProjectList = ({
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
 
   const scrollToTop = () => {
     window.scrollTo({
@@ -67,6 +80,11 @@ const ProjectList = ({
       document.body.style.overflow = "";
     };
   }, [loading]);
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -113,6 +131,9 @@ const ProjectList = ({
       // if no fresh cache, fetch projects like normal and update cache
       try {
         const response = await fetch(API_URL);
+        if (!response.ok) {
+          throw new Error(`Request failed with status ${response.status}`);
+        }
         const data = await response.json();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const formattedData: Project[] = data.map((item: any) =>
@@ -136,7 +157,8 @@ const ProjectList = ({
           },
         });
       } catch (error) {
-        toast.error("Failed to refresh projects. Please try again later.", {
+        const detail = error instanceof Error ? error.message : String(error);
+        toast.error(`Failed to refresh projects: ${detail}`, {
           style: {
             borderRadius: "8px",
             background: "#333",
@@ -174,14 +196,6 @@ const ProjectList = ({
           {displayedProjects.length} / {projects.length} projects shown
         </span>
         <RefreshContainer>
-          <p className="update-text">
-            Last Refreshed:
-            <br />
-            {lastRefreshed
-              ? `${lastRefreshed?.toLocaleDateString()}, 
-            ${lastRefreshed?.toLocaleTimeString()}`
-              : "n/a"}
-          </p>
           <RefreshButton
             onClick={() => {
               setLoading(true);
@@ -189,6 +203,11 @@ const ProjectList = ({
             }}
           >
             Refresh Projects
+            <RefreshSubtext>
+              {lastRefreshed
+                ? `Updated ${formatRelativeTime(lastRefreshed, now)}`
+                : "Never updated"}
+            </RefreshSubtext>
           </RefreshButton>
           <ViewToggle>
             <button
@@ -336,9 +355,10 @@ const ViewToggle = styled.div`
     background: #f3f4f6;
     border: 1px solid #ddd;
     padding: 8px 12px;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s;
+    height: 44px;
 
     &.active {
       background: ${palette.accent};
@@ -357,20 +377,20 @@ const RefreshContainer = styled.div`
   flex-flow: row wrap;
   gap: 0.5rem;
   align-items: end;
-
-  .update-text {
-    font-size: 0.75rem;
-    min-width: 90px;
-  }
 `;
 
 const RefreshButton = styled.button`
-  padding: 5px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  height: 44px;
   border: none;
   border-radius: 8px;
   background-color: ${palette.accent};
   color: white;
-  font-size: 1rem;
+  font-size: 0.9rem;
   cursor: pointer;
   align-self: flex-end;
   transition: filter 0.3s ease;
@@ -382,6 +402,12 @@ const RefreshButton = styled.button`
   &:active {
     filter: brightness(0.7);
   }
+`;
+
+const RefreshSubtext = styled.span`
+  font-size: 0.6rem;
+  font-weight: 400;
+  opacity: 0.8;
 `;
 
 const LoadingContainer = styled.div`
