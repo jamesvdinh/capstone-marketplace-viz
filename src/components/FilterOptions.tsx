@@ -25,6 +25,13 @@ const ORGANIZATION_TYPES = [
   "Government or Public Sector",
 ];
 
+// The intake form's raw start-up answers still carry an explanatory suffix
+// (e.g. "Start-Up (External) - You must have already developed an MVP"),
+// but ORGANIZATION_TYPES only shows the shortened label. Compare on just
+// the part before " - " so filtering still matches the raw responses.
+const normalizeOrganizationType = (value: string) =>
+  value.split(" - ")[0].trim().toLowerCase();
+
 const TRI_STATE_OPTIONS = ["All", "No", "Yes"] as const;
 type TriState = (typeof TRI_STATE_OPTIONS)[number];
 
@@ -317,7 +324,9 @@ const FilterOptions = ({
     if (organizationTypeInput.length > 0) {
       filtered = filtered.filter((project) =>
         organizationTypeInput.some(
-          (v) => v.toLowerCase() === project.organizationType.toLowerCase()
+          (v) =>
+            normalizeOrganizationType(v) ===
+            normalizeOrganizationType(project.organizationType)
         )
       );
     }
@@ -573,6 +582,7 @@ const Label = styled.label`
 
 const SelectWrapper = styled.div`
   flex: 1 1 80px;
+  min-width: 150px;
   max-width: 220px;
   display: flex;
   flex-flow: column nowrap;
@@ -580,6 +590,7 @@ const SelectWrapper = styled.div`
 
   &.search {
     flex: 2 1 80px;
+    min-width: 240px;
     max-width: none;
   }
 
@@ -630,7 +641,7 @@ const FilterWrapper = styled.div`
   flex-flow: column nowrap;
   gap: 0.35rem;
   flex: 1 1 80px;
-  min-width: 0;
+  min-width: 150px;
   max-width: 240px;
 
   @media (max-width: 600px) {
