@@ -5,6 +5,7 @@ import capstoneLogo from "../assets/Long Wrapped Logo (resized).png";
 import styled, { css } from "styled-components";
 import SkeletonBlock from "./Skeleton";
 import * as palette from ".././styles/GlobalStyles";
+import { useIsMobile } from "../hooks/useIsMobile";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { library } from "@fortawesome/fontawesome-svg-core";
 
@@ -156,6 +157,7 @@ const KeywordList = ({
   // kept off-screen so the visible list can be trimmed independently.
   const allChips = affiliationChip ? [affiliationChip, ...keywords] : keywords;
   const [visibleCount, setVisibleCount] = useState(allChips.length);
+  const isMobile = useIsMobile();
 
   useLayoutEffect(() => {
     const container = containerRef.current;
@@ -165,6 +167,14 @@ const KeywordList = ({
     );
 
     const measure = () => {
+      // The "+N" chip only reveals hidden keywords on :hover, which never
+      // fires on mobile taps - so on mobile just show every keyword instead
+      // of trying to make a hover-only tooltip touch-friendly.
+      if (isMobile) {
+        setVisibleCount(allChips.length);
+        return;
+      }
+
       if (!container || !ghost || items.length === 0) {
         setVisibleCount(allChips.length);
         return;
@@ -210,7 +220,7 @@ const KeywordList = ({
     observer.observe(container);
     return () => observer.disconnect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [keywords, affiliationChip]);
+  }, [keywords, affiliationChip, isMobile]);
 
   const hiddenKeywords = keywords.slice(
     Math.max(visibleCount - (affiliationChip ? 1 : 0), 0)

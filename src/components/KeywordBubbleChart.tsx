@@ -3,6 +3,7 @@ import * as d3 from "d3";
 import styled from "styled-components";
 import type { Project } from "../types/project";
 import * as palette from "../styles/GlobalStyles";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 interface BubbleNode extends d3.SimulationNodeDatum {
   keyword: string;
@@ -45,6 +46,7 @@ const KeywordBubbleChart = ({
   const [nodes, setNodes] = useState<BubbleNode[]>([]);
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
   const [hoveredKeyword, setHoveredKeyword] = useState<string | null>(null);
+  const isMobile = useIsMobile();
   const simulationRef = useRef<d3.Simulation<BubbleNode, undefined> | null>(
     null
   );
@@ -67,7 +69,12 @@ const KeywordBubbleChart = ({
     const freq = buildFrequencyMap(projects);
     const maxCount = Math.max(...freq.values());
 
-    const radiusScale = d3.scaleSqrt().domain([1, maxCount]).range([12, 60]);
+    // Narrower containers get smaller bubbles so the same keyword set has a
+    // realistic chance of fitting without every bubble getting shoved
+    // against (and past) the edges.
+    const radiusRange: [number, number] =
+      containerWidth < 400 ? [8, 36] : [12, 60];
+    const radiusScale = d3.scaleSqrt().domain([1, maxCount]).range(radiusRange);
     const colorScale = d3
       .scaleSequential(d3.interpolateBlues)
       .domain([1, maxCount]);
@@ -85,6 +92,20 @@ const KeywordBubbleChart = ({
 
     simulationRef.current?.stop();
 
+    // None of the forces below constrain nodes to stay within the chart's
+    // bounds (they only push nodes apart / pull them toward center), so a
+    // narrow container can end up shoving bubbles past its own edges -
+    // clamp positions back into [r, containerWidth/height - r] every tick.
+    const clampNodes = () => {
+      bubbleNodes.forEach((d) => {
+        d.x = Math.max(
+          d.r,
+          Math.min(containerWidth - d.r, d.x ?? containerWidth / 2)
+        );
+        d.y = Math.max(d.r, Math.min(height - d.r, d.y ?? height / 2));
+      });
+    };
+
     // Uses D3.js force directed graph
     const simulation = d3
       .forceSimulation(bubbleNodes)
@@ -95,9 +116,11 @@ const KeywordBubbleChart = ({
         d3.forceCollide<BubbleNode>((d) => d.r + 2).strength(0.6)
       )
       .on("tick", () => {
+        clampNodes();
         setNodes([...bubbleNodes]);
       })
       .on("end", () => {
+        clampNodes();
         setNodes([...bubbleNodes]);
       });
 
@@ -128,20 +151,28 @@ const KeywordBubbleChart = ({
                   transition: "opacity 0.2s ease",
                 }}
                 onClick={() => onKeywordClick?.(node.keyword)}
-                onMouseEnter={() => {
-                  setHoveredKeyword(node.keyword);
-                  setTooltip({
-                    nodeX: node.x ?? 0,
-                    nodeY: node.y ?? 0,
-                    nodeR: node.r,
-                    keyword: node.keyword,
-                    count: node.count,
-                  });
-                }}
-                onMouseLeave={() => {
-                  setHoveredKeyword(null);
-                  setTooltip(null);
-                }}
+                onMouseEnter={
+                  isMobile
+                    ? undefined
+                    : () => {
+                        setHoveredKeyword(node.keyword);
+                        setTooltip({
+                          nodeX: node.x ?? 0,
+                          nodeY: node.y ?? 0,
+                          nodeR: node.r,
+                          keyword: node.keyword,
+                          count: node.count,
+                        });
+                      }
+                }
+                onMouseLeave={
+                  isMobile
+                    ? undefined
+                    : () => {
+                        setHoveredKeyword(null);
+                        setTooltip(null);
+                      }
+                }
               >
                 <circle
                   r={node.r}
@@ -188,7 +219,8 @@ const KeywordBubbleChart = ({
             );
           })}
 
-          {tooltip &&
+          {!isMobile &&
+            tooltip &&
             (() => {
               const tipWidth = Math.max(tooltip.keyword.length * 7.5, 80) + 16;
               const rightEdge = tooltip.nodeX + tooltip.nodeR + 6 + tipWidth;

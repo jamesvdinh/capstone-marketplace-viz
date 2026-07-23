@@ -2,6 +2,7 @@ import { styled } from "styled-components";
 import { Link } from "../styles/GlobalStyles";
 import type { Project } from "../types/project";
 import KeywordBubbleChart from "./KeywordBubbleChart";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 const Hero = ({
   projects,
@@ -10,6 +11,8 @@ const Hero = ({
   projects: Project[];
   onKeywordClick?: (keyword: string) => void;
 }) => {
+  const isMobile = useIsMobile();
+
   return (
     <ParentContainer>
       <TextContent>
@@ -62,6 +65,7 @@ const Hero = ({
         <KeywordBubbleChart
           projects={projects}
           onKeywordClick={onKeywordClick}
+          height={isMobile ? 300 : 500}
         />
         <p>Click a keyword to search!</p>
       </ChartContainer>
@@ -93,7 +97,8 @@ const TextContent = styled.div`
 const ChartContainer = styled.div`
   display: flex;
   flex-flow: column nowrap;
-  width: 600px;
+  width: 100%;
+  max-width: 600px;
   flex-shrink: 0;
   margin: 1.75rem auto;
   text-align: center;
@@ -102,7 +107,7 @@ const ChartContainer = styled.div`
   gap: 0.75rem;
 
   @media (max-width: 600px) {
-    display: none;
+    margin-top: 1rem;
   }
 `;
 

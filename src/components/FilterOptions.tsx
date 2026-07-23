@@ -19,8 +19,8 @@ interface FilterProps {
 // list rather than something derived from responses (see dataParser.ts).
 const ORGANIZATION_TYPES = [
   "Non-profit",
-  "Start-Up (External) - You must have already developed an MVP",
-  "Start-Up (UC Berkeley Alumni)  - You must have already developed an MVP",
+  "Start-Up (External)",
+  "Start-Up (UC Berkeley Alumni)",
   "For-profit",
   "Government or Public Sector",
 ];
