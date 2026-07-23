@@ -396,10 +396,6 @@ const Title = styled.h2`
   font-size: 1rem;
   margin: 0.5em 0;
   ${truncateText}
-
-  @media (max-width: 600px) {
-    -webkit-line-clamp: 3;
-  }
 `;
 
 const AdvisorContainer = styled.div`

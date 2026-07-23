@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
 import * as palette from ".././styles/GlobalStyles";
 import type { Project } from "../types/project";
@@ -59,22 +59,154 @@ const TriStateSlider = ({
   </SelectWrapper>
 );
 
+// Job-board-style multi-select: a pill that reads "Label" when empty or
+// "Label: FirstValue +N" once something's picked, opening a checkbox panel.
+// Only one of these panels is open at a time (via isOpen/onToggle from the
+// parent), matching the exclusive-dropdown behavior of most filter bars.
+const MultiSelectFilter = ({
+  label,
+  options,
+  selected,
+  onChange,
+  isOpen,
+  onToggle,
+  onClose,
+}: {
+  label: string;
+  options: string[];
+  selected: string[];
+  onChange: (next: string[]) => void;
+  isOpen: boolean;
+  onToggle: () => void;
+  onClose: () => void;
+}) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
+        onClose();
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isOpen, onClose]);
+
+  // Focused imperatively (rather than the `autoFocus` prop) to avoid a
+  // Firefox/React 19 console error ("focus is read-only") that autoFocus
+  // triggers on elements rendered conditionally like this panel's input.
+  useEffect(() => {
+    if (isOpen) searchInputRef.current?.focus();
+  }, [isOpen]);
+
+  // Reset the in-panel search each time it's opened rather than leaving
+  // stale filter text from a previous session.
+  const handleTogglePill = () => {
+    if (!isOpen) setSearch("");
+    onToggle();
+  };
+
+  const toggleOption = (option: string) => {
+    onChange(
+      selected.includes(option)
+        ? selected.filter((v) => v !== option)
+        : [...selected, option]
+    );
+  };
+
+  const visibleOptions = search
+    ? options.filter((o) => o.toLowerCase().includes(search.toLowerCase()))
+    : options;
+
+  const valueLabel =
+    selected.length === 0
+      ? "Any"
+      : selected.length === 1
+      ? selected[0]
+      : `${selected[0]} +${selected.length - 1}`;
+
+  return (
+    <FilterWrapper ref={containerRef}>
+      <Label as="span">{label}</Label>
+      <FilterPill
+        type="button"
+        $active={selected.length > 0}
+        onClick={handleTogglePill}
+      >
+        <PillLabel title={valueLabel}>{valueLabel}</PillLabel>
+        {selected.length > 0 && (
+          <ClearIcon
+            role="button"
+            aria-label={`Clear ${label}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              onChange([]);
+            }}
+          >
+            <FontAwesomeIcon icon={["fas", "xmark"]} />
+          </ClearIcon>
+        )}
+        <FontAwesomeIcon
+          icon={["fas", isOpen ? "chevron-up" : "chevron-down"]}
+        />
+      </FilterPill>
+
+      {isOpen && (
+        <Panel>
+          {options.length > 6 && (
+            <PanelSearch
+              ref={searchInputRef}
+              type="text"
+              placeholder={`Search ${label.toLowerCase()}...`}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          )}
+          <PanelList>
+            {visibleOptions.length === 0 && <PanelEmpty>No matches</PanelEmpty>}
+            {visibleOptions.map((option) => (
+              <PanelOption key={option} onClick={() => toggleOption(option)}>
+                <input
+                  type="checkbox"
+                  readOnly
+                  checked={selected.includes(option)}
+                />
+                <span>{option}</span>
+              </PanelOption>
+            ))}
+          </PanelList>
+        </Panel>
+      )}
+    </FilterWrapper>
+  );
+};
+
 const FilterOptions = ({
   projects,
   setDisplayedProjects,
   searchInput,
   setSearchInput,
 }: FilterProps) => {
-  const [advisorDeptInput, setAdvisorDeptInput] = useState("");
-  const [acceptingStudentsFromInput, setAcceptingStudentsFromInput] =
-    useState("");
-  const [teamSizeInput, setTeamSizeInput] = useState("");
-  const [organizationTypeInput, setOrganizationTypeInput] = useState("");
-  const [industryInput, setIndustryInput] = useState("");
-  const [companySizeInput, setCompanySizeInput] = useState("");
+  const [advisorDeptInput, setAdvisorDeptInput] = useState<string[]>([]);
+  const [acceptingStudentsFromInput, setAcceptingStudentsFromInput] = useState<
+    string[]
+  >([]);
+  const [teamSizeInput, setTeamSizeInput] = useState<string[]>([]);
+  const [organizationTypeInput, setOrganizationTypeInput] = useState<string[]>(
+    []
+  );
+  const [industryInput, setIndustryInput] = useState<string[]>([]);
+  const [companySizeInput, setCompanySizeInput] = useState<string[]>([]);
   const [citizenshipInput, setCitizenshipInput] = useState<TriState>("All");
   const [ndaInput, setNdaInput] = useState<TriState>("All");
   const [showMoreFilters, setShowMoreFilters] = useState(false);
+  const [openFilter, setOpenFilter] = useState<string | null>(null);
 
   const {
     advisorDepts,
@@ -117,20 +249,20 @@ const FilterOptions = ({
   }, [projects]);
 
   const hasActiveMoreFilters =
-    organizationTypeInput !== "" ||
-    industryInput !== "" ||
-    companySizeInput !== "" ||
+    organizationTypeInput.length > 0 ||
+    industryInput.length > 0 ||
+    companySizeInput.length > 0 ||
     citizenshipInput !== "All" ||
     ndaInput !== "All";
 
   const handleReset = () => {
     setSearchInput("");
-    setAdvisorDeptInput("");
-    setAcceptingStudentsFromInput("");
-    setTeamSizeInput("");
-    setOrganizationTypeInput("");
-    setIndustryInput("");
-    setCompanySizeInput("");
+    setAdvisorDeptInput([]);
+    setAcceptingStudentsFromInput([]);
+    setTeamSizeInput([]);
+    setOrganizationTypeInput([]);
+    setIndustryInput([]);
+    setCompanySizeInput([]);
     setCitizenshipInput("All");
     setNdaInput("All");
   };
@@ -156,46 +288,53 @@ const FilterOptions = ({
       });
     }
 
-    if (advisorDeptInput) {
+    if (advisorDeptInput.length > 0) {
       filtered = filtered.filter((project) =>
-        project.ucbAffiliation
-          .toLowerCase()
-          .includes(advisorDeptInput.toLowerCase())
+        advisorDeptInput.some(
+          (v) => v.toLowerCase() === project.ucbAffiliation.toLowerCase()
+        )
       );
     }
 
-    if (acceptingStudentsFromInput) {
+    if (acceptingStudentsFromInput.length > 0) {
       filtered = filtered.filter((project) =>
         project.acceptingMajors.some((major) =>
-          major.toLowerCase().includes(acceptingStudentsFromInput.toLowerCase())
+          acceptingStudentsFromInput.some(
+            (v) => v.toLowerCase() === major.toLowerCase()
+          )
         )
       );
     }
 
-    if (teamSizeInput) {
+    if (teamSizeInput.length > 0) {
       filtered = filtered.filter((project) =>
-        project.teamSizes.some((size) => size.toLowerCase() === teamSizeInput)
-      );
-    }
-
-    if (organizationTypeInput) {
-      filtered = filtered.filter(
-        (project) =>
-          project.organizationType.toLowerCase() === organizationTypeInput
-      );
-    }
-
-    if (industryInput) {
-      filtered = filtered.filter((project) =>
-        project.industries.some(
-          (industry) => industry.toLowerCase() === industryInput
+        project.teamSizes.some((size) =>
+          teamSizeInput.some((v) => v.toLowerCase() === size.toLowerCase())
         )
       );
     }
 
-    if (companySizeInput) {
-      filtered = filtered.filter(
-        (project) => project.companySize.toLowerCase() === companySizeInput
+    if (organizationTypeInput.length > 0) {
+      filtered = filtered.filter((project) =>
+        organizationTypeInput.some(
+          (v) => v.toLowerCase() === project.organizationType.toLowerCase()
+        )
+      );
+    }
+
+    if (industryInput.length > 0) {
+      filtered = filtered.filter((project) =>
+        project.industries.some((industry) =>
+          industryInput.some((v) => v.toLowerCase() === industry.toLowerCase())
+        )
+      );
+    }
+
+    if (companySizeInput.length > 0) {
+      filtered = filtered.filter((project) =>
+        companySizeInput.some(
+          (v) => v.toLowerCase() === project.companySize.toLowerCase()
+        )
       );
     }
 
@@ -231,6 +370,10 @@ const FilterOptions = ({
     setDisplayedProjects(displayedProjects);
   }, [displayedProjects, setDisplayedProjects]);
 
+  const makeToggleHandler = (key: string) => () =>
+    setOpenFilter((prev) => (prev === key ? null : key));
+  const closeFilter = () => setOpenFilter(null);
+
   return (
     <ParentContainer>
       <FilterRow>
@@ -245,55 +388,35 @@ const FilterOptions = ({
           />
         </SelectWrapper>
 
-        <SelectWrapper>
-          <Label htmlFor="advisor_dept">Advisor Department</Label>
-          <Dropdown
-            id="advisor_dept"
-            value={advisorDeptInput}
-            onChange={(e) => setAdvisorDeptInput(e.target.value)}
-          >
-            <option value="">- Any -</option>
-            {advisorDepts.map((item) => (
-              <option value={item.toLowerCase()} key={item.toLowerCase()}>
-                {item}
-              </option>
-            ))}
-          </Dropdown>
-        </SelectWrapper>
+        <MultiSelectFilter
+          label="Advisor Department"
+          options={advisorDepts}
+          selected={advisorDeptInput}
+          onChange={setAdvisorDeptInput}
+          isOpen={openFilter === "advisorDept"}
+          onToggle={makeToggleHandler("advisorDept")}
+          onClose={closeFilter}
+        />
 
-        <SelectWrapper>
-          <Label htmlFor="accepting_students_from">
-            Accepting Students From
-          </Label>
-          <Dropdown
-            id="accepting_students_from"
-            value={acceptingStudentsFromInput}
-            onChange={(e) => setAcceptingStudentsFromInput(e.target.value)}
-          >
-            <option value="">- Any -</option>
-            {acceptingStudentsFrom.map((item) => (
-              <option value={item.toLowerCase()} key={item.toLowerCase()}>
-                {item}
-              </option>
-            ))}
-          </Dropdown>
-        </SelectWrapper>
+        <MultiSelectFilter
+          label="Accepting Students From"
+          options={acceptingStudentsFrom}
+          selected={acceptingStudentsFromInput}
+          onChange={setAcceptingStudentsFromInput}
+          isOpen={openFilter === "acceptingStudentsFrom"}
+          onToggle={makeToggleHandler("acceptingStudentsFrom")}
+          onClose={closeFilter}
+        />
 
-        <SelectWrapper>
-          <Label htmlFor="team_size">Team Size</Label>
-          <Dropdown
-            id="team_size"
-            value={teamSizeInput}
-            onChange={(e) => setTeamSizeInput(e.target.value)}
-          >
-            <option value="">- Any -</option>
-            {teamSizes.map((item) => (
-              <option value={item.toLowerCase()} key={item.toLowerCase()}>
-                {item}
-              </option>
-            ))}
-          </Dropdown>
-        </SelectWrapper>
+        <MultiSelectFilter
+          label="Team Size"
+          options={teamSizes}
+          selected={teamSizeInput}
+          onChange={setTeamSizeInput}
+          isOpen={openFilter === "teamSize"}
+          onToggle={makeToggleHandler("teamSize")}
+          onClose={closeFilter}
+        />
 
         <MoreFiltersToggle
           type="button"
@@ -311,53 +434,35 @@ const FilterOptions = ({
 
       {showMoreFilters && (
         <FilterRow>
-          <SelectWrapper>
-            <Label htmlFor="organization_type">Organization Type</Label>
-            <Dropdown
-              id="organization_type"
-              value={organizationTypeInput}
-              onChange={(e) => setOrganizationTypeInput(e.target.value)}
-            >
-              <option value="">- Any -</option>
-              {ORGANIZATION_TYPES.map((item) => (
-                <option value={item.toLowerCase()} key={item.toLowerCase()}>
-                  {item}
-                </option>
-              ))}
-            </Dropdown>
-          </SelectWrapper>
+          <MultiSelectFilter
+            label="External - Organization Type"
+            options={ORGANIZATION_TYPES}
+            selected={organizationTypeInput}
+            onChange={setOrganizationTypeInput}
+            isOpen={openFilter === "organizationType"}
+            onToggle={makeToggleHandler("organizationType")}
+            onClose={closeFilter}
+          />
 
-          <SelectWrapper>
-            <Label htmlFor="industry">Industry</Label>
-            <Dropdown
-              id="industry"
-              value={industryInput}
-              onChange={(e) => setIndustryInput(e.target.value)}
-            >
-              <option value="">- Any -</option>
-              {industries.map((item) => (
-                <option value={item.toLowerCase()} key={item.toLowerCase()}>
-                  {item}
-                </option>
-              ))}
-            </Dropdown>
-          </SelectWrapper>
+          <MultiSelectFilter
+            label="External - Industry"
+            options={industries}
+            selected={industryInput}
+            onChange={setIndustryInput}
+            isOpen={openFilter === "industry"}
+            onToggle={makeToggleHandler("industry")}
+            onClose={closeFilter}
+          />
 
-          <SelectWrapper>
-            <Label htmlFor="company_size">Company Size</Label>
-            <Dropdown
-              id="company_size"
-              value={companySizeInput}
-              onChange={(e) => setCompanySizeInput(e.target.value)}
-            >
-              <option value="">- Any -</option>
-              {companySizes.map((item) => (
-                <option value={item.toLowerCase()} key={item.toLowerCase()}>
-                  {item}
-                </option>
-              ))}
-            </Dropdown>
-          </SelectWrapper>
+          <MultiSelectFilter
+            label="External - Company Size"
+            options={companySizes}
+            selected={companySizeInput}
+            onChange={setCompanySizeInput}
+            isOpen={openFilter === "companySize"}
+            onToggle={makeToggleHandler("companySize")}
+            onClose={closeFilter}
+          />
 
           <TriStateSlider
             label="US Citizenship Required"
@@ -474,24 +579,13 @@ const SelectWrapper = styled.div`
   gap: 0.35rem;
 
   &.search {
-    flex: 2 1 260px;
+    flex: 2 1 80px;
     max-width: none;
   }
 
   @media (max-width: 600px) {
     max-width: none;
   }
-`;
-
-const Dropdown = styled.select`
-  width: 100%;
-  height: 42px;
-  padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid ${palette.borderColor};
-  background-color: white;
-  cursor: pointer;
-  font-size: 0.85rem;
 `;
 
 const SliderTrack = styled.div`
@@ -528,6 +622,133 @@ const SliderOption = styled.button<{ $active: boolean }>`
   font-weight: 600;
   color: ${(p) => (p.$active ? "white" : "#666")};
   transition: color 0.2s ease;
+`;
+
+const FilterWrapper = styled.div`
+  position: relative;
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 0.35rem;
+  flex: 1 1 80px;
+  min-width: 0;
+  max-width: 240px;
+
+  @media (max-width: 600px) {
+    max-width: none;
+  }
+`;
+
+const FilterPill = styled.button<{ $active: boolean }>`
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  height: 42px;
+  padding: 0 10px 0 12px;
+  gap: 6px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  text-align: left;
+  overflow: hidden;
+
+  border: 1px solid ${(p) => (p.$active ? palette.accent : palette.borderColor)};
+  background-color: ${(p) => (p.$active ? `${palette.accent}14` : "white")};
+  color: ${(p) => (p.$active ? palette.accent : "#333")};
+  font-weight: ${(p) => (p.$active ? 700 : 400)};
+
+  svg {
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    opacity: 0.7;
+  }
+`;
+
+const PillLabel = styled.span`
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const ClearIcon = styled.span`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.08);
+  }
+`;
+
+const Panel = styled.div`
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 30;
+  width: max-content;
+  min-width: 100%;
+  max-width: 320px;
+  background: white;
+  border: 1px solid ${palette.borderColor};
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  padding: 8px;
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 6px;
+`;
+
+const PanelSearch = styled.input`
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid ${palette.borderColor};
+  border-radius: 6px;
+  font-size: 0.85rem;
+  outline: none;
+
+  &:focus {
+    border-color: ${palette.accent};
+  }
+`;
+
+const PanelList = styled.div`
+  display: flex;
+  flex-flow: column nowrap;
+  max-height: 260px;
+  overflow-y: auto;
+`;
+
+const PanelOption = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: #333;
+
+  input {
+    accent-color: ${palette.accent};
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    background-color: ${palette.chipBg};
+  }
+`;
+
+const PanelEmpty = styled.div`
+  padding: 6px 8px;
+  font-size: 0.8rem;
+  color: #999;
 `;
 
 export default FilterOptions;
