@@ -331,8 +331,8 @@ const ListInfo = styled.div`
 
 const CountChip = styled.span`
   display: inline-block;
-  background-color: #e2e2e2;
-  color: #000;
+  background-color: ${palette.chipBgStrong};
+  color: ${palette.chipTextStrong};
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   padding: 2px 10px;

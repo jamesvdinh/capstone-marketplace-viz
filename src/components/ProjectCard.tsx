@@ -45,7 +45,7 @@ function getAffiliationChip(
   const color =
     affiliationColors[
       deptCode.toLowerCase() as keyof typeof affiliationColors
-    ] || affiliationColors.external;
+    ] || palette.unknownAffiliationColor;
   return { label: deptCode || ucbAffiliation, color };
 }
 
@@ -95,7 +95,7 @@ const ProjectThumbnail = ({
   );
 };
 
-const MAX_KEYWORD_LINES = 4;
+const MAX_KEYWORD_LINES = 5;
 const ROW_TOLERANCE = 2; // px slack for grouping chips into the same visual row
 const GAP = 5; // matches KeywordContainer's `gap`
 
@@ -103,7 +103,11 @@ const GAP = 5; // matches KeywordContainer's `gap`
 // rounded corners), which would clip this tooltip too if it were a normal
 // absolutely-positioned child - so it's portaled to <body> and positioned
 // from the chip's live screen coordinates instead.
-const MoreChipWithTooltip = ({ hiddenKeywords }: { hiddenKeywords: string[] }) => {
+const MoreChipWithTooltip = ({
+  hiddenKeywords,
+}: {
+  hiddenKeywords: string[];
+}) => {
   const chipRef = useRef<HTMLDivElement>(null);
   const [anchor, setAnchor] = useState<{ top: number; left: number } | null>(
     null
@@ -221,15 +225,21 @@ const KeywordList = ({
       <Measurer aria-hidden="true">
         {allChips.map((chip, i) =>
           typeof chip === "string" ? (
-            <Keyword key={i} ref={(el) => {
+            <Keyword
+              key={i}
+              ref={(el) => {
                 itemRefs.current[i] = el;
-              }}>
+              }}
+            >
               {chip}
             </Keyword>
           ) : (
-            <div key={i} ref={(el) => {
+            <div
+              key={i}
+              ref={(el) => {
                 itemRefs.current[i] = el;
-              }}>
+              }}
+            >
               {chip}
             </div>
           )
@@ -434,7 +444,8 @@ const AffiliationChip = styled.div<{ $bg: string; $text: string }>`
 `;
 
 const Keyword = styled.div`
-  background-color: #eee;
+  background-color: ${palette.chipBg};
+  color: ${palette.chipText};
   padding: 0.25rem 0.5rem;
   border-radius: 10px;
   font-size: 0.75rem;
@@ -449,8 +460,8 @@ const MoreChipGhost = styled(Keyword)`
 `;
 
 const MoreChip = styled.div`
-  background-color: #ddd;
-  color: #333;
+  background-color: ${palette.chipBgStrong};
+  color: ${palette.chipTextStrong};
   padding: 0.25rem 0.5rem;
   border-radius: 10px;
   font-size: 0.75rem;

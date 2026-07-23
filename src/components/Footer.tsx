@@ -1,5 +1,6 @@
 import styled from "styled-components";
 import fungInstituteLogo from "../assets/FI_Horizontal_White_transparent.png";
+import * as palette from "../styles/GlobalStyles";
 
 function Footer() {
   return (
@@ -30,7 +31,7 @@ const ParentContainer = styled.div`
 
 const FooterWrapper = styled.footer`
   width: 100%;
-  background-color: #002676;
+  background-color: ${palette.accent};
   color: #fff;
   text-align: center;
   padding: 1.5rem 2rem;

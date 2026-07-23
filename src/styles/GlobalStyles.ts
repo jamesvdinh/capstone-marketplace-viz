@@ -18,13 +18,22 @@ const GlobalStyles = createGlobalStyle`
   }
 `;
 
-export const accent = "#0b5394";
+export const accent = "#002676";
 export const bgColor = "#f5f5f5";
 export const borderColor = "#ddd";
-export const headingColor = "#6E85B2";
-export const titleColor = "#b399dc";
-export const subtitleColor = "#939aad";
-export const textColor = "#dcdcdc";
+
+// Warm-neutral surface for plain (non-affiliation) chips - keeps them from
+// reading as flat gray-on-gray against the page background, without
+// standing out enough to compete with the colored affiliation chips.
+export const chipBg = "#eeece7";
+export const chipText = "#6b665f";
+export const chipBgStrong = "#e1ded6";
+export const chipTextStrong = "#57524a";
+
+// Fallback for advisor-dept codes that don't match a known department -
+// deliberately distinct from any real affiliation color (including
+// "external org") so bad/unmapped data is visually obvious, not disguised.
+export const unknownAffiliationColor = { bg: "#e8e8e8", text: "#555555" };
 
 export const Link = styled.a`
   color: ${accent};
