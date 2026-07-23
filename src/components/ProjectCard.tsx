@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { Project } from "../types/project";
 import capstoneLogo from "../assets/Long Wrapped Logo (resized).png";
 import styled, { css } from "styled-components";
@@ -94,6 +95,159 @@ const ProjectThumbnail = ({
   );
 };
 
+const MAX_KEYWORD_LINES = 4;
+const ROW_TOLERANCE = 2; // px slack for grouping chips into the same visual row
+const GAP = 5; // matches KeywordContainer's `gap`
+
+// The card is `overflow: hidden` (needed to clip the thumbnail to its
+// rounded corners), which would clip this tooltip too if it were a normal
+// absolutely-positioned child - so it's portaled to <body> and positioned
+// from the chip's live screen coordinates instead.
+const MoreChipWithTooltip = ({ hiddenKeywords }: { hiddenKeywords: string[] }) => {
+  const chipRef = useRef<HTMLDivElement>(null);
+  const [anchor, setAnchor] = useState<{ top: number; left: number } | null>(
+    null
+  );
+
+  const show = () => {
+    const rect = chipRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    setAnchor({ top: rect.top - 6, left: rect.left });
+  };
+  const hide = () => setAnchor(null);
+
+  return (
+    <>
+      <MoreChip ref={chipRef} onMouseEnter={show} onMouseLeave={hide}>
+        +{hiddenKeywords.length}
+      </MoreChip>
+      {anchor &&
+        createPortal(
+          <MoreTooltip
+            style={{ top: anchor.top, left: anchor.left }}
+            onMouseEnter={show}
+            onMouseLeave={hide}
+          >
+            {hiddenKeywords.map((keyword, i) => (
+              <span key={i}>{keyword}</span>
+            ))}
+          </MoreTooltip>,
+          document.body
+        )}
+    </>
+  );
+};
+
+const KeywordList = ({
+  affiliationChip,
+  keywords,
+}: {
+  affiliationChip: React.ReactNode;
+  keywords: string[];
+}) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const ghostRef = useRef<HTMLDivElement>(null);
+  // Every chip (affiliation + keywords), used only for measuring rows -
+  // kept off-screen so the visible list can be trimmed independently.
+  const allChips = affiliationChip ? [affiliationChip, ...keywords] : keywords;
+  const [visibleCount, setVisibleCount] = useState(allChips.length);
+
+  useLayoutEffect(() => {
+    const container = containerRef.current;
+    const ghost = ghostRef.current;
+    const items = itemRefs.current.filter(
+      (el): el is HTMLDivElement => el !== null
+    );
+
+    const measure = () => {
+      if (!container || !ghost || items.length === 0) {
+        setVisibleCount(allChips.length);
+        return;
+      }
+
+      const rows: HTMLDivElement[][] = [];
+      items.forEach((item) => {
+        const row = rows[rows.length - 1];
+        if (
+          row &&
+          Math.abs(item.offsetTop - row[0].offsetTop) <= ROW_TOLERANCE
+        ) {
+          row.push(item);
+        } else {
+          rows.push([item]);
+        }
+      });
+
+      if (rows.length <= MAX_KEYWORD_LINES) {
+        setVisibleCount(allChips.length);
+        return;
+      }
+
+      let visible = rows.slice(0, MAX_KEYWORD_LINES).flat();
+      const containerWidth = container.clientWidth;
+
+      // Leave room on the last visible row for the "+N" badge; if it
+      // doesn't fit, keep dropping the last chip until it does.
+      while (visible.length > 0) {
+        const lastItem = visible[visible.length - 1];
+        const usedRight = lastItem.offsetLeft + lastItem.offsetWidth;
+        if (usedRight + GAP + ghost.offsetWidth <= containerWidth) break;
+        visible = visible.slice(0, -1);
+      }
+
+      setVisibleCount(visible.length);
+    };
+
+    measure();
+
+    if (!container) return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(container);
+    return () => observer.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [keywords, affiliationChip]);
+
+  const hiddenKeywords = keywords.slice(
+    Math.max(visibleCount - (affiliationChip ? 1 : 0), 0)
+  );
+  const visibleKeywords = keywords.slice(
+    0,
+    Math.max(visibleCount - (affiliationChip ? 1 : 0), 0)
+  );
+
+  return (
+    <KeywordContainer ref={containerRef}>
+      <Measurer aria-hidden="true">
+        {allChips.map((chip, i) =>
+          typeof chip === "string" ? (
+            <Keyword key={i} ref={(el) => {
+                itemRefs.current[i] = el;
+              }}>
+              {chip}
+            </Keyword>
+          ) : (
+            <div key={i} ref={(el) => {
+                itemRefs.current[i] = el;
+              }}>
+              {chip}
+            </div>
+          )
+        )}
+      </Measurer>
+      <MoreChipGhost ref={ghostRef}>+99</MoreChipGhost>
+
+      {affiliationChip}
+      {visibleKeywords.map((keyword, i) => (
+        <Keyword key={i}>{keyword}</Keyword>
+      ))}
+      {hiddenKeywords.length > 0 && (
+        <MoreChipWithTooltip hiddenKeywords={hiddenKeywords} />
+      )}
+    </KeywordContainer>
+  );
+};
+
 const ProjectCard = ({ project, viewMode }: ProjectCardProps) => {
   return (
     <ParentContainer $viewMode={viewMode} href={project.url} target="_blank">
@@ -113,8 +267,8 @@ const ProjectCard = ({ project, viewMode }: ProjectCardProps) => {
               : "TBD"}
           </span>
         </AdvisorContainer>
-        <KeywordContainer>
-          {(() => {
+        <KeywordList
+          affiliationChip={(() => {
             const chip = getAffiliationChip(
               project.ucbAffiliation,
               project.affiliation
@@ -125,11 +279,8 @@ const ProjectCard = ({ project, viewMode }: ProjectCardProps) => {
               </AffiliationChip>
             ) : null;
           })()}
-          {project.keywords.length > 0 &&
-            project.keywords.map((keyword, i) => (
-              <Keyword key={i}>{keyword}</Keyword>
-            ))}
-        </KeywordContainer>
+          keywords={project.keywords}
+        />
       </ContentContainer>
     </ParentContainer>
   );
@@ -251,9 +402,26 @@ const AdvisorContainer = styled.div`
 `;
 
 const KeywordContainer = styled.div`
+  position: relative;
   display: flex;
   flex-flow: row wrap;
   gap: 5px;
+`;
+
+// Off-screen clone of every chip, used only to measure which row each one
+// falls into - decoupled from the visible (trimmed) list so re-measuring
+// after a resize always starts from the full set again.
+const Measurer = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  visibility: hidden;
+  display: flex;
+  flex-flow: row wrap;
+  gap: 5px;
+  pointer-events: none;
+  z-index: -1;
 `;
 
 const AffiliationChip = styled.div<{ $bg: string; $text: string }>`
@@ -270,6 +438,47 @@ const Keyword = styled.div`
   padding: 0.25rem 0.5rem;
   border-radius: 10px;
   font-size: 0.75rem;
+`;
+
+const MoreChipGhost = styled(Keyword)`
+  position: absolute;
+  visibility: hidden;
+  top: -9999px;
+  left: -9999px;
+  white-space: nowrap;
+`;
+
+const MoreChip = styled.div`
+  background-color: #ddd;
+  color: #333;
+  padding: 0.25rem 0.5rem;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: default;
+`;
+
+// Positioned via inline `top`/`left` (viewport coordinates) and anchored to
+// grow upward from that point, since it's portaled to <body> rather than
+// nested in the card - see MoreChipWithTooltip.
+const MoreTooltip = styled.div`
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 4px;
+  position: fixed;
+  transform: translateY(-100%);
+  background: white;
+  border: 1px solid ${palette.borderColor};
+  border-radius: 8px;
+  padding: 8px 10px;
+  min-width: 140px;
+  max-width: 220px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  z-index: 20;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: #333;
+  white-space: normal;
 `;
 
 export default ProjectCard;

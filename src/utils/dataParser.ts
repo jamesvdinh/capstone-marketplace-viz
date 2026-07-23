@@ -41,9 +41,16 @@ const findAdvisorNames = (raw: Record<string, unknown>): string[] => {
 
 // The main "Accepting Student Applications from the following Departments"
 // field never lists EECS - EECS recruiting is captured by a separate
-// yes/no-style question instead, so it has to be folded in manually.
-const EECS_EXTERNAL_RECRUITING =
-  "Your project is recruiting EECS students and is an external organization. (We will be in touch with next steps.)";
+// single-select question instead, so it has to be folded in manually.
+// That question branches on advisor affiliation and has a distinct
+// "recruiting" answer for each branch (external org / UCB-EECS advisor /
+// UCB non-EECS advisor with an EECS collaborator) plus one "not recruiting"
+// answer - all three "recruiting" variants must be treated as EECS-accepting.
+const EECS_RECRUITING_ANSWERS = new Set([
+  "Your project is recruiting EECS students and is an external organization. (We will be in touch with next steps.)",
+  "Your project is recruiting EECS students and the PRIMARY or SECONDARY Advisor is in the EECS Dept.",
+  "Your project is recruiting EECS students and you’ve identified an EECS faculty collaborator.",
+]);
 const EECS_LABEL = "Electrical Engineering and Computer Science (EECS)";
 
 // "UCB - EECS" -> "eecs"; "External Organization" -> ""
@@ -83,7 +90,7 @@ export const parseProjectData = (raw: any): Project => {
   );
   const eecsRecruiting = findValue(raw, /^EECS Student Applications/i);
   if (
-    eecsRecruiting === EECS_EXTERNAL_RECRUITING &&
+    EECS_RECRUITING_ANSWERS.has(eecsRecruiting) &&
     !acceptingMajors.includes(EECS_LABEL)
   ) {
     acceptingMajors.push(EECS_LABEL);
