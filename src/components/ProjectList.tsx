@@ -18,7 +18,10 @@ library.add(fas, far);
 const API_URL =
   "https://script.google.com/macros/s/AKfycbxHMdinYiTJ4gHDpe7hL6AxjFJWU-U_PFoFdrwAg3j4n6OYIQg-XeVHIea1Es9QOacOLg/exec";
 
-const CACHE_KEY = "marketplace_projects_cache";
+// Bump the "_v*" suffix whenever the Project shape changes - otherwise
+// browsers with an existing cache silently keep serving projects missing
+// the new fields (they read as `undefined`) until the 10-min TTL lapses.
+const CACHE_KEY = "marketplace_projects_cache_v2";
 const CACHE_EXPIRATION = 10 * 60 * 1000; // 10 mins
 
 const CACHE_REFRESH_KEY = "marketplace_projects_last_refresh";

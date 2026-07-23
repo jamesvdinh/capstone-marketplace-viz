@@ -9,4 +9,10 @@ export type Project = {
   acceptingMajors: string[];
   thumbnail: string;
   thumbnailFallback: string;
+  organizationType: string;
+  industries: string[];
+  companySize: string;
+  teamSizes: string[];
+  usCitizenshipRequired: boolean;
+  ndaRequired: boolean;
 };

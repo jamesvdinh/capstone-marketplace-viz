@@ -59,6 +59,62 @@ const extractDeptCode = (ucbAffiliation: string): string => {
   return match ? match[1].trim().toLowerCase() : "";
 };
 
+// The industry question is a checkbox (multi-select) field, and Google Forms
+// exports checkbox answers as a plain comma-joined string of the selected
+// labels - but several of the labels themselves contain commas (e.g. "Arts,
+// Media, Entertainment"), so a naive split(",") shreds those into bogus
+// fragments. Since the option set is fixed and known, greedily match the
+// longest known option at the front of the remaining text instead.
+const INDUSTRY_OPTIONS = [
+  "Aerospace",
+  "Agriculture",
+  "Artificial Intelligence",
+  "Apparel",
+  "Arts, Media, Entertainment",
+  "Automotive",
+  "Biotechnology",
+  "Building and Construction",
+  "Chemical and Advanced Materials",
+  "Computer Hardware",
+  "Consulting",
+  "Consumer Electronics",
+  "Education",
+  "Energy, Environment, and Utilities",
+  "Finance, Insurance, and Banking",
+  "Food and Beverage",
+  "Government",
+  "Healthcare",
+  "Hospitality, Tourism, and Recreation",
+  "Information Technology",
+  "Insurance",
+  "Machinery",
+  "Manufacturing",
+  "Medical Devices / Services",
+  "Not for Profit",
+  "Retail and Ecommerce",
+  "Robotics",
+  "Software",
+  "Space Exploration and Technology",
+  "Sustainability",
+  "Telecommunications",
+  "Transportation and Logisitics",
+  "Other",
+].sort((a, b) => b.length - a.length); // longest first, so no option's prefix wins over a longer one that also matches
+
+const splitIndustries = (text: string): string[] => {
+  const result: string[] = [];
+  let rest = text.trim();
+
+  while (rest) {
+    const match = INDUSTRY_OPTIONS.find((opt) => rest.startsWith(opt));
+    if (!match) break; // unrecognized leftover text - stop rather than guess
+    result.push(match);
+    rest = rest.slice(match.length).replace(/^[,;]\s*/, "");
+  }
+
+  return result;
+};
+
 // Form file-uploads land as Drive "open?id=" viewer links, which don't
 // render as an <img src>. `drive.google.com/thumbnail` resolves those, but
 // its redirect response is sent as no-store/must-revalidate, so the browser
@@ -109,6 +165,20 @@ export const parseProjectData = (raw: any): Project => {
     // Standard strings
     affiliation: findValue(raw, /^Organization Name/i),
     ucbAffiliation,
+
+    // Only asked of external organizations - blank for UCB-advised projects.
+    organizationType: findValue(raw, /^Type of Organization/i),
+    industries: splitIndustries(
+      findValue(raw, /^Please share the primary field or industry/i)
+    ),
+    companySize: findValue(raw, /^Company size/i),
+    teamSizes: splitTags(findValue(raw, /^Team Size - Specific or Range/i)),
+    usCitizenshipRequired:
+      findValue(raw, /^Do you require US citizenship for participation/i) ===
+      "Yes",
+    ndaRequired:
+      findValue(raw, /^Will you require students to sign a NDA form/i) ===
+      "Yes",
 
     // Primary comes from the sample-visual upload; department image is a
     // separate fallback in case the primary URL 404s / isn't viewable.
