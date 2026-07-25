@@ -52,7 +52,7 @@ const Hero = ({
           </li>
         </ol>
         <p>
-          Jump in below or go here for the Gooogle Sheet version:{" "}
+          Jump in below or go here for the Google Sheets version:{" "}
           <Link
             href="https://docs.google.com/spreadsheets/d/1Nh4dJ6ZEqWIScWII1PBAqCHVhhOLEJPzbG8grpoBFag/edit?usp=sharing"
             target="_blank"
