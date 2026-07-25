@@ -355,7 +355,7 @@ const ParentContainer = styled.a<{ $viewMode: string }>`
 `;
 
 const ContentContainer = styled.div`
-  padding: 0.25rem 0.75rem 0.5rem;
+  padding: 0.5rem 0.75rem 0.75rem;
 `;
 
 const ProjectId = styled.div`
