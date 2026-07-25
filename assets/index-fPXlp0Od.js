@@ -645,7 +645,7 @@ If it declares any Font Awesome CSS pseudo-elements, they will not be rendered a
     }
   }
 `,Y82=e2.div`
-  padding: 0.25rem 0.75rem 0.5rem;
+  padding: 0.5rem 0.75rem 0.75rem;
 `,V82=e2.div`
   position: absolute;
   top: 0;
