@@ -325,7 +325,6 @@ const ParentContainer = styled.a<{ $viewMode: string }>`
   line-height: 1.4;
   animation: fade-in 0.3s ease;
   position: relative;
-  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
 
   &:hover {
     transform: translateY(-5px);
@@ -348,7 +347,7 @@ const ParentContainer = styled.a<{ $viewMode: string }>`
       transform: translateY(10px);
     }
     100% {
-      opacity: 100;
+      opacity: 1;
       transform: translateY(0px);
     }
   }
