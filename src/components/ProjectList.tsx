@@ -338,12 +338,14 @@ const CountChip = styled.span`
   color: ${palette.chipTextStrong};
   font-weight: 600;
   font-variant-numeric: tabular-nums;
-  padding: 2px 10px;
-  border-radius: 999px;
+  padding: 2px 8px;
+  border-radius: 8px;
 `;
 
 const Separator = styled.hr`
   margin: 0.75rem 0;
+  border: none;
+  border-top: 1px solid ${palette.borderColor};
 `;
 
 const ListContainer = styled.ul<{ $viewMode: "grid" | "list" }>`
