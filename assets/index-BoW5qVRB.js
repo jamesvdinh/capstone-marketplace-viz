@@ -617,7 +617,6 @@ If it declares any Font Awesome CSS pseudo-elements, they will not be rendered a
   line-height: 1.4;
   animation: fade-in 0.3s ease;
   position: relative;
-  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
 
   &:hover {
     transform: translateY(-5px);
@@ -640,7 +639,7 @@ If it declares any Font Awesome CSS pseudo-elements, they will not be rendered a
       transform: translateY(10px);
     }
     100% {
-      opacity: 100;
+      opacity: 1;
       transform: translateY(0px);
     }
   }
@@ -1369,7 +1368,7 @@ to {
   svg {
     display: block;
   }
-`,Ue2=({projects:l,onKeywordClick:n})=>{const i=Xl();return R.jsxs(qe2,{children:[R.jsxs(Fe2,{children:[R.jsx("h1",{children:"Explore the Capstone Project Marketplace!"}),R.jsx("p",{children:"Browse available projects to find opportunities that match your interests and goals."}),R.jsx("p",{children:"Each capstone project provides hands-on experience to strengthen skills in leadership, teamwork, communication, and problem-solving — essential for your success in the MEng program and beyond. Projects are designed to build both technical and leadership skills that are transferable across career paths."}),R.jsxs("p",{children:["When choosing a project, consider key factors such as"," ",R.jsx("span",{className:"font-bold",children:"keywords, project scope, and affiliation"})," ","(faculty-led vs. industry-sponsored). For more in-depth information, be sure to click on the individual project card to find detailed descriptions of the work involved."]}),R.jsx("p",{className:"font-bold",children:"Use this information to start narrowing your choices so you can:"}),R.jsxs("ol",{className:"list-decimal",children:[R.jsxs("li",{children:[R.jsx("span",{className:"font-bold",children:"Decide"})," which Capstone Advisor Office Hour sessions to attend."]}),R.jsxs("li",{children:[R.jsx("span",{className:"font-bold",children:"Develop"})," a short list of your top 20 or so preferences to help you begin to narrow down to your final 6 top choices."]})]}),R.jsxs("p",{children:["Jump in below or go here for the project source:"," ",R.jsx(Cb,{href:"https://docs.google.com/spreadsheets/d/1Nh4dJ6ZEqWIScWII1PBAqCHVhhOLEJPzbG8grpoBFag/edit?usp=sharing",target:"_blank",children:"AY26-27 Project Marketplace Overview."})]})]}),R.jsxs($e2,{children:[R.jsx(He2,{projects:l,onKeywordClick:n,height:i?300:500}),R.jsx("p",{children:"Click a keyword to search!"})]})]})},Fe2=e2.div`
+`,Ue2=({projects:l,onKeywordClick:n})=>{const i=Xl();return R.jsxs(qe2,{children:[R.jsxs(Fe2,{children:[R.jsx("h1",{children:"Explore the Capstone Project Marketplace!"}),R.jsx("p",{children:"Browse available projects to find opportunities that match your interests and goals."}),R.jsx("p",{children:"Each capstone project provides hands-on experience to strengthen skills in leadership, teamwork, communication, and problem-solving — essential for your success in the MEng program and beyond. Projects are designed to build both technical and leadership skills that are transferable across career paths."}),R.jsxs("p",{children:["When choosing a project, consider key factors such as"," ",R.jsx("span",{className:"font-bold",children:"keywords, project scope, and affiliation"})," ","(faculty-led vs. industry-sponsored). For more in-depth information, be sure to click on the individual project card to find detailed descriptions of the work involved."]}),R.jsx("p",{className:"font-bold",children:"Use this information to start narrowing your choices so you can:"}),R.jsxs("ol",{className:"list-decimal",children:[R.jsxs("li",{children:[R.jsx("span",{className:"font-bold",children:"Decide"})," which Capstone Advisor Office Hour sessions to attend."]}),R.jsxs("li",{children:[R.jsx("span",{className:"font-bold",children:"Develop"})," a short list of your top 20 or so preferences to help you begin to narrow down to your final 6 top choices."]})]}),R.jsxs("p",{children:["Jump in below or go here for the Gooogle Sheet version:"," ",R.jsx(Cb,{href:"https://docs.google.com/spreadsheets/d/1Nh4dJ6ZEqWIScWII1PBAqCHVhhOLEJPzbG8grpoBFag/edit?usp=sharing",target:"_blank",children:"AY26-27 Project Marketplace Overview."})]})]}),R.jsxs($e2,{children:[R.jsx(He2,{projects:l,onKeywordClick:n,height:i?300:500}),R.jsx("p",{children:"Click a keyword to search!"})]})]})},Fe2=e2.div`
   display: flex;
   flex-flow: column nowrap;
   gap: 15px 0;
