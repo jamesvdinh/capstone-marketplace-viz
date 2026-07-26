@@ -324,6 +324,7 @@ const ParentContainer = styled.a<{ $viewMode: string }>`
   height: ${(props) => (props.$viewMode === "grid" ? "100%" : "auto")};
   line-height: 1.4;
   animation: fade-in 0.3s ease;
+  transition: transform 0.3s ease;
   position: relative;
 
   &:hover {
@@ -344,11 +345,11 @@ const ParentContainer = styled.a<{ $viewMode: string }>`
   @keyframes fade-in {
     0% {
       opacity: 0;
-      transform: translateY(10px);
+      translate: 0 10px;
     }
     100% {
       opacity: 1;
-      transform: translateY(0px);
+      translate: 0 0;
     }
   }
 `;
