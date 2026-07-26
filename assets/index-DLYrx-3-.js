@@ -616,6 +616,7 @@ If it declares any Font Awesome CSS pseudo-elements, they will not be rendered a
   height: ${l=>l.$viewMode==="grid"?"100%":"auto"};
   line-height: 1.4;
   animation: fade-in 0.3s ease;
+  transition: transform 0.3s ease;
   position: relative;
 
   &:hover {
@@ -636,11 +637,11 @@ If it declares any Font Awesome CSS pseudo-elements, they will not be rendered a
   @keyframes fade-in {
     0% {
       opacity: 0;
-      transform: translateY(10px);
+      translate: 0 10px;
     }
     100% {
       opacity: 1;
-      transform: translateY(0px);
+      translate: 0 0;
     }
   }
 `,Y82=e2.div`
