@@ -22,11 +22,11 @@ const Hero = ({
           interests and goals.
         </p>
         <p>
-          Each capstone project provides hands-on experience to strengthen
+          Each Capstone project provides hands-on experience to strengthen
           skills in leadership, teamwork, communication, and problem-solving —
           essential for your success in the MEng program and beyond. Projects
           are designed to build both technical and leadership skills that are
-          transferable across career paths.
+          transferable across your career path.
         </p>
         <p>
           When choosing a project, consider key factors such as{" "}
