@@ -6,6 +6,7 @@ import styled, { css } from "styled-components";
 import SkeletonBlock from "./Skeleton";
 import * as palette from ".././styles/GlobalStyles";
 import { useIsMobile } from "../hooks/useIsMobile";
+import { useInView } from "../hooks/useInView";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { library } from "@fortawesome/fontawesome-svg-core";
 
@@ -57,6 +58,7 @@ const ProjectThumbnail = ({
   project: Project;
   viewMode: "grid" | "list";
 }) => {
+  const [wrapperRef, inView] = useInView<HTMLDivElement>();
   const [imgSrc, setImgSrc] = useState(
     project.thumbnail || project.thumbnailFallback || capstoneLogo
   );
@@ -80,18 +82,19 @@ const ProjectThumbnail = ({
   };
 
   return (
-    <ThumbnailWrapper $viewMode={viewMode}>
+    <ThumbnailWrapper ref={wrapperRef} $viewMode={viewMode}>
       {!loaded && <Skeleton />}
-      <Thumbnail
-        ref={checkAlreadyLoaded}
-        $hasThumb={imgSrc !== capstoneLogo}
-        $loaded={loaded}
-        src={imgSrc}
-        loading="lazy"
-        alt="Project Thumbnail"
-        onLoad={() => setLoaded(true)}
-        onError={handleImgError}
-      />
+      {inView && (
+        <Thumbnail
+          ref={checkAlreadyLoaded}
+          $hasThumb={imgSrc !== capstoneLogo}
+          $loaded={loaded}
+          src={imgSrc}
+          alt="Project Thumbnail"
+          onLoad={() => setLoaded(true)}
+          onError={handleImgError}
+        />
+      )}
     </ThumbnailWrapper>
   );
 };
