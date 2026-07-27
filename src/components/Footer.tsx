@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import fungInstituteLogo from "../assets/FI_Horizontal_White_transparent.png";
+import fungInstituteLogo from "../assets/Fung Logo Stacked FULL NAME white.png";
 import * as palette from "../styles/GlobalStyles";
 
 function Footer() {

@@ -19,6 +19,7 @@ const GlobalStyles = createGlobalStyle`
 `;
 
 export const accent = "#002676";
+export const link = "#1155cc";
 export const bgColor = "#f5f5f5";
 export const borderColor = "#ddd";
 
@@ -36,7 +37,7 @@ export const chipTextStrong = "#57524a";
 export const unknownAffiliationColor = { bg: "#e8e8e8", text: "#555555" };
 
 export const Link = styled.a`
-  color: ${accent};
+  color: ${link};
   transition: 0.3s all ease;
 
   &:hover {

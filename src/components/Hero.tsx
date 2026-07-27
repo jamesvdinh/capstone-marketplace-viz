@@ -31,7 +31,8 @@ const Hero = ({
         <p>
           When choosing a project, consider key factors such as{" "}
           <span className="font-bold">
-            keywords, project scope, and affiliation
+            keywords, project scope, skills needed, skills developed, and
+            affiliation
           </span>{" "}
           (faculty-led vs. industry-sponsored). For more in-depth information,
           be sure to click on the individual project card to find detailed

@@ -41,8 +41,8 @@ function getAffiliationChip(
     };
   }
 
-  // ucbAffiliation is formatted like "UCB - EECS"; extract the dept code
-  const deptCode = ucbAffiliation.replace(/^UCB\s*-\s*/i, "").trim();
+  // ucbAffiliation is already a bare dept code (e.g. "EECS")
+  const deptCode = ucbAffiliation.trim();
   const color =
     affiliationColors[
       deptCode.toLowerCase() as keyof typeof affiliationColors

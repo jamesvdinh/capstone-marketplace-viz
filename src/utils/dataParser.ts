@@ -19,7 +19,9 @@ const splitTags = (
 
 // Response-sheet headers are long, occasionally multi-line, and get
 // re-wrapped by Google Forms, so columns are located by a stable prefix
-// rather than an exact string match.
+// rather than an exact string match. Only used for the handful of fields
+// still joined in from the response sheet - everything else now comes
+// straight off the Project Marketplace sheet, whose headers are exact.
 const findValue = (raw: Record<string, unknown>, pattern: RegExp): string => {
   // Forms duplicates some questions across branches (e.g. a UCB-org vs.
   // external-org advisor block) with near-identical titles that don't merge
@@ -31,32 +33,6 @@ const findValue = (raw: Record<string, unknown>, pattern: RegExp): string => {
     if (val) return val;
   }
   return "";
-};
-
-const findAdvisorNames = (raw: Record<string, unknown>): string[] => {
-  const advisor1 = findValue(raw, /^NAME of Project Advisor\s*#1/i);
-  const advisor2 = findValue(raw, /^NAME of Project Advisor #2/i);
-  return [advisor1, advisor2].filter((v) => v);
-};
-
-// The main "Accepting Student Applications from the following Departments"
-// field never lists EECS - EECS recruiting is captured by a separate
-// single-select question instead, so it has to be folded in manually.
-// That question branches on advisor affiliation and has a distinct
-// "recruiting" answer for each branch (external org / UCB-EECS advisor /
-// UCB non-EECS advisor with an EECS collaborator) plus one "not recruiting"
-// answer - all three "recruiting" variants must be treated as EECS-accepting.
-const EECS_RECRUITING_ANSWERS = new Set([
-  "Your project is recruiting EECS students and is an external organization. (We will be in touch with next steps.)",
-  "Your project is recruiting EECS students and the PRIMARY or SECONDARY Advisor is in the EECS Dept.",
-  "Your project is recruiting EECS students and you’ve identified an EECS faculty collaborator.",
-]);
-const EECS_LABEL = "Electrical Engineering and Computer Science (EECS)";
-
-// "UCB - EECS" -> "eecs"; "External Organization" -> ""
-const extractDeptCode = (ucbAffiliation: string): string => {
-  const match = ucbAffiliation.match(/^UCB\s*-\s*(.+)$/i);
-  return match ? match[1].trim().toLowerCase() : "";
 };
 
 // The industry question is a checkbox (multi-select) field, and Google Forms
@@ -130,59 +106,113 @@ const resolveThumbnail = (driveUrl: string): string => {
     : driveUrl;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const parseProjectData = (raw: any): Project => {
-  const ucbAffiliation = findValue(raw, /^Project Advisor Affiliation/i);
+// On the Project Marketplace sheet, "UCB Department Affiliation" is already
+// a bare dept code (e.g. "EECS", "BIOE") or the literal "External
+// Organization" for non-UCB projects - no prefix stripping needed.
+const extractDeptCode = (ucbAffiliation: string): string => {
+  const normalized = ucbAffiliation.trim();
+  if (normalized.toLowerCase() === "external organization") return "";
+  return normalized.toLowerCase();
+};
+
+type ResponseJoinFields = {
+  thumbnail: string;
+  organizationType: string;
+  industries: string[];
+  companySize: string;
+};
+
+// The Project Marketplace sheet is the source of truth for a project's
+// existence and most of its fields; these four are still only collected on
+// the original response sheet, so they're looked up by Project ID and left
+// blank if a matching response row isn't found.
+const parseResponseJoinFields = (
+  raw: Record<string, unknown> | undefined
+): ResponseJoinFields => {
+  if (!raw) {
+    return { thumbnail: "", organizationType: "", industries: [], companySize: "" };
+  }
+
   const rawThumbnail = findValue(
     raw,
     /^Please supply a sample visual for this project/i
   );
 
-  const acceptingMajors = splitTags(
-    findValue(
-      raw,
-      /^Accepting Student Applications from the following Departments/i
-    )
-  );
-  const eecsRecruiting = findValue(raw, /^EECS Student Applications/i);
-  if (
-    EECS_RECRUITING_ANSWERS.has(eecsRecruiting) &&
-    !acceptingMajors.includes(EECS_LABEL)
-  ) {
-    acceptingMajors.push(EECS_LABEL);
-  }
-
   return {
-    projectId: Number(raw["project_id"]),
-    name: findValue(raw, /^Project Title/i),
-    url: findValue(raw, /^Project Doc URL/i),
-
-    // Transform comma-separated strings into Arrays
-    keywords: splitTags(findValue(raw, /^Keywords/i)),
-    advisorNames: findAdvisorNames(raw),
-    acceptingMajors,
-
-    // Standard strings
-    affiliation: findValue(raw, /^Organization Name/i),
-    ucbAffiliation,
-
-    // Only asked of external organizations - blank for UCB-advised projects.
+    thumbnail: rawThumbnail ? resolveThumbnail(rawThumbnail) : "",
     organizationType: findValue(raw, /^Type of Organization/i),
     industries: splitIndustries(
       findValue(raw, /^Please share the primary field or industry/i)
     ),
     companySize: findValue(raw, /^Company size/i),
-    teamSizes: splitTags(findValue(raw, /^Team Size - Specific or Range/i)),
+  };
+};
+
+const parseProjectData = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  marketplaceRow: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  responseRow: any | undefined
+): Project => {
+  const ucbAffiliation = String(
+    marketplaceRow["UCB Department Affiliation"] ?? ""
+  ).trim();
+
+  const advisorNames = [
+    marketplaceRow["Primary Advisor"],
+    marketplaceRow["Additional Faculty Advisor, if Applicable"],
+  ]
+    .map((v) => String(v ?? "").trim())
+    .filter((v) => v);
+
+  const { thumbnail, organizationType, industries, companySize } =
+    parseResponseJoinFields(responseRow);
+
+  return {
+    projectId: Number(marketplaceRow["project_id"]),
+    name: String(marketplaceRow["Project Title"] ?? "").trim(),
+    url: String(marketplaceRow["Project Title_url"] ?? "").trim(),
+
+    keywords: splitTags(marketplaceRow["Keywords"]),
+    advisorNames,
+    acceptingMajors: splitTags(marketplaceRow["Accepting Students From"]),
+
+    affiliation: String(marketplaceRow["Affiliation"] ?? "").trim(),
+    ucbAffiliation,
+
+    // Joined in from the response sheet - see parseResponseJoinFields.
+    organizationType,
+    industries,
+    companySize,
+
+    teamSizes: splitTags(marketplaceRow["Target Team Size"]),
     usCitizenshipRequired:
-      findValue(raw, /^Do you require US citizenship for participation/i) ===
-      "Yes",
-    ndaRequired:
-      findValue(raw, /^Will you require students to sign a NDA form/i) ===
+      String(marketplaceRow["Is US Citizenship Required?"] ?? "").trim() ===
       "Yes",
 
-    // Primary comes from the sample-visual upload; department image is a
-    // separate fallback in case the primary URL 404s / isn't viewable.
-    thumbnail: rawThumbnail ? resolveThumbnail(rawThumbnail) : "",
+    // Primary comes from the joined response row's sample-visual upload;
+    // department image is a separate fallback in case the primary URL
+    // 404s / isn't viewable.
+    thumbnail,
     thumbnailFallback: assignThumbnail(extractDeptCode(ucbAffiliation)),
   };
+};
+
+// Left join: the Project Marketplace sheet is the source of truth for which
+// projects exist (deleting a row there drops the project from the list),
+// with a handful of fields joined in from the original response sheet by
+// Project ID.
+export const mergeProjectData = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  marketplaceRows: any[],
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  responseRows: any[]
+): Project[] => {
+  const responseById = new Map(
+    responseRows.map((row) => [Number(row["project_id"]), row])
+  );
+
+  return marketplaceRows.map((row) =>
+    parseProjectData(row, responseById.get(Number(row["project_id"])))
+  );
 };

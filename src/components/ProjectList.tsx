@@ -4,7 +4,7 @@ import styled from "styled-components";
 import ProjectCard from "./ProjectCard";
 import SkeletonBlock from "./Skeleton";
 import * as palette from ".././styles/GlobalStyles";
-import { parseProjectData } from "../utils/dataParser";
+import { mergeProjectData } from "../utils/dataParser";
 import FilterOptions from "./FilterOptions";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { library } from "@fortawesome/fontawesome-svg-core";
@@ -15,13 +15,19 @@ import toast from "react-hot-toast";
 
 library.add(fas, far);
 
-const API_URL =
+// Source of truth: deleting a row here drops the project from the list.
+const MARKETPLACE_API_URL =
+  "https://script.google.com/macros/s/AKfycbxG4-7e9v5UernBNrKy8Iv_HvGuIDCDzwmQuokKlgDaLZ9dXo94WEsP2Kp-1Qc3jJB9Xw/exec";
+// Joined in by Project ID for the handful of fields only collected here
+// (thumbnail, org type, industry, company size) - see mergeProjectData.
+const RESPONSE_API_URL =
   "https://script.google.com/macros/s/AKfycbxHMdinYiTJ4gHDpe7hL6AxjFJWU-U_PFoFdrwAg3j4n6OYIQg-XeVHIea1Es9QOacOLg/exec";
 
-// Bump the "_v*" suffix whenever the Project shape changes - otherwise
-// browsers with an existing cache silently keep serving projects missing
-// the new fields (they read as `undefined`) until the 10-min TTL lapses.
-const CACHE_KEY = "marketplace_projects_cache_v2";
+// Caches the raw sheet rows, not the parsed Project[] - mergeProjectData
+// runs fresh on every load (cached or not), so changes to parsing logic
+// (new fields, resolveThumbnail's URL format, etc.) take effect immediately
+// without needing to bump this key.
+const CACHE_KEY = "marketplace_projects_cache";
 const CACHE_EXPIRATION = 10 * 60 * 1000; // 10 mins
 
 const CACHE_REFRESH_KEY = "marketplace_projects_last_refresh";
@@ -118,29 +124,44 @@ const ProjectList = ({
       // load from cache if available
       const cachedData = localStorage.getItem(CACHE_KEY);
       if (cachedData && !forceRefresh) {
-        const { data, timestamp } = JSON.parse(cachedData);
+        const parsed = JSON.parse(cachedData);
+        // Old cache shape (pre two-sheet join) was { data, timestamp } -
+        // ignore it and fall through to a fresh fetch instead of crashing.
+        const { marketplace, responses, timestamp } = parsed;
+        if (Array.isArray(marketplace) && Array.isArray(responses)) {
+          const data: Project[] = mergeProjectData(marketplace, responses);
 
-        setProjects(data);
-        setDisplayedProjects(data);
-        onProjectsLoaded?.(data);
-        setLoading(false);
+          setProjects(data);
+          setDisplayedProjects(data);
+          onProjectsLoaded?.(data);
+          setLoading(false);
 
-        // once cache is loaded, check if it's still fresh. If so, skip fetching
-        if (Date.now() - timestamp < CACHE_EXPIRATION) {
-          return;
+          // once cache is loaded, check if it's still fresh. If so, skip fetching
+          if (Date.now() - timestamp < CACHE_EXPIRATION) {
+            return;
+          }
         }
       }
 
       // if no fresh cache, fetch projects like normal and update cache
       try {
-        const response = await fetch(API_URL);
-        if (!response.ok) {
-          throw new Error(`Request failed with status ${response.status}`);
+        const [marketplaceRes, responseRes] = await Promise.all([
+          fetch(MARKETPLACE_API_URL),
+          fetch(RESPONSE_API_URL),
+        ]);
+        if (!marketplaceRes.ok) {
+          throw new Error(
+            `Request failed with status ${marketplaceRes.status}`
+          );
         }
-        const data = await response.json();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const formattedData: Project[] = data.map((item: any) =>
-          parseProjectData(item)
+        if (!responseRes.ok) {
+          throw new Error(`Request failed with status ${responseRes.status}`);
+        }
+        const marketplace = await marketplaceRes.json();
+        const responses = await responseRes.json();
+        const formattedData: Project[] = mergeProjectData(
+          marketplace,
+          responses
         );
         setProjects(formattedData);
         setDisplayedProjects(formattedData);
@@ -148,7 +169,8 @@ const ProjectList = ({
         localStorage.setItem(
           CACHE_KEY,
           JSON.stringify({
-            data: formattedData,
+            marketplace,
+            responses,
             timestamp: Date.now(),
           })
         );

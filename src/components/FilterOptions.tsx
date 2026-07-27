@@ -35,8 +35,8 @@ const normalizeOrganizationType = (value: string) =>
 const TRI_STATE_OPTIONS = ["All", "No", "Yes"] as const;
 type TriState = (typeof TRI_STATE_OPTIONS)[number];
 
-// Shared control for the two Yes/No sheet fields (US citizenship, NDA) -
-// same three-position slider, just a different label/value/handler.
+// Shared control for Yes/No/All sheet fields (e.g. US citizenship) - a
+// three-position slider, reusable with a different label/value/handler.
 const TriStateSlider = ({
   label,
   value,
@@ -211,7 +211,6 @@ const FilterOptions = ({
   const [industryInput, setIndustryInput] = useState<string[]>([]);
   const [companySizeInput, setCompanySizeInput] = useState<string[]>([]);
   const [citizenshipInput, setCitizenshipInput] = useState<TriState>("All");
-  const [ndaInput, setNdaInput] = useState<TriState>("All");
   const [showMoreFilters, setShowMoreFilters] = useState(false);
   const [openFilter, setOpenFilter] = useState<string | null>(null);
 
@@ -259,8 +258,7 @@ const FilterOptions = ({
     organizationTypeInput.length > 0 ||
     industryInput.length > 0 ||
     companySizeInput.length > 0 ||
-    citizenshipInput !== "All" ||
-    ndaInput !== "All";
+    citizenshipInput !== "All";
 
   const handleReset = () => {
     setSearchInput("");
@@ -271,7 +269,6 @@ const FilterOptions = ({
     setIndustryInput([]);
     setCompanySizeInput([]);
     setCitizenshipInput("All");
-    setNdaInput("All");
   };
 
   const displayedProjects = useMemo(() => {
@@ -354,13 +351,6 @@ const FilterOptions = ({
       );
     }
 
-    if (ndaInput !== "All") {
-      const requiresNda = ndaInput === "Yes";
-      filtered = filtered.filter(
-        (project) => project.ndaRequired === requiresNda
-      );
-    }
-
     return filtered;
   }, [
     projects,
@@ -372,7 +362,6 @@ const FilterOptions = ({
     industryInput,
     companySizeInput,
     citizenshipInput,
-    ndaInput,
   ]);
 
   useEffect(() => {
@@ -477,12 +466,6 @@ const FilterOptions = ({
             label="US Citizenship Required"
             value={citizenshipInput}
             onChange={setCitizenshipInput}
-          />
-
-          <TriStateSlider
-            label="NDA Required"
-            value={ndaInput}
-            onChange={setNdaInput}
           />
         </FilterRow>
       )}
