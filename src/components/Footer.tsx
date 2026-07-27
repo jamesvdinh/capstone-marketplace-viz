@@ -17,15 +17,17 @@ function Footer() {
 }
 
 const Logo = styled.img`
-  max-height: 65px;
+  max-height: 60px;
 `;
 
 const ParentContainer = styled.div`
   display: flex;
   flex-flow: row wrap;
   align-items: center;
+  justify-content: center;
   max-width: 1200px;
   margin: auto;
+  padding-bottom: 2rem;
   gap: 30px;
 `;
 
