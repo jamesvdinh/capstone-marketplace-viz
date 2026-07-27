@@ -169,7 +169,7 @@ const parseProjectData = (
     parseResponseJoinFields(responseRow);
 
   return {
-    projectId: Number(marketplaceRow["project_id"]),
+    projectId: Number(marketplaceRow["Project ID"]),
     name: String(marketplaceRow["Project Title"] ?? "").trim(),
     url: String(marketplaceRow["Project Title_url"] ?? "").trim(),
 
@@ -202,6 +202,16 @@ const parseProjectData = (
 // projects exist (deleting a row there drops the project from the list),
 // with a handful of fields joined in from the original response sheet by
 // Project ID.
+//
+// The response sheet's Apps Script derives "project_id" from row position
+// (i + 1), which is a safe stand-in there since response rows are an
+// append-only form log that's never reordered or deleted. The marketplace
+// sheet's own "project_id" is derived the same row-position way, but that
+// sheet DOES have rows deleted (that's the whole point - dropping a row
+// removes the project from the list), which desyncs row position from the
+// real Project ID for every row after a deletion. Its actual "Project ID"
+// column is the stable value that survives deletions, so that's the join
+// key used on the marketplace side - never its computed "project_id".
 export const mergeProjectData = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   marketplaceRows: any[],
@@ -213,6 +223,6 @@ export const mergeProjectData = (
   );
 
   return marketplaceRows.map((row) =>
-    parseProjectData(row, responseById.get(Number(row["project_id"])))
+    parseProjectData(row, responseById.get(Number(row["Project ID"])))
   );
 };
