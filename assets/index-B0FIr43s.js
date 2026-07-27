@@ -1412,14 +1412,16 @@ to {
   align-items: flex-start;
   max-width: 1200px;
   margin: auto;
-`,Ge2="/capstone-marketplace-viz/assets/Fung%20Logo%20Stacked%20FULL%20NAME%20white-CuTpYz-4.png";function Pe2(){return H.jsx(Xe2,{children:H.jsxs(Ve2,{children:[H.jsx(Ye2,{src:Ge2}),H.jsx("span",{children:"UC Berkeley | Fung Institute for Engineering Leadership | College of Engineering | 2026-27"})]})})}const Ye2=c2.img`
-  max-height: 65px;
+`,Ge2="/capstone-marketplace-viz/assets/Fung%20Logo%20Stacked%20FULL%20NAME%20white-8nozq-uD.png";function Pe2(){return H.jsx(Xe2,{children:H.jsxs(Ve2,{children:[H.jsx(Ye2,{src:Ge2}),H.jsx("span",{children:"UC Berkeley | Fung Institute for Engineering Leadership | College of Engineering | 2026-27"})]})})}const Ye2=c2.img`
+  max-height: 60px;
 `,Ve2=c2.div`
   display: flex;
   flex-flow: row wrap;
   align-items: center;
+  justify-content: center;
   max-width: 1200px;
   margin: auto;
+  padding-bottom: 2rem;
   gap: 30px;
 `,Xe2=c2.footer`
   width: 100%;
