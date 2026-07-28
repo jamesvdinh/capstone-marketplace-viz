@@ -15,13 +15,19 @@ import toast from "react-hot-toast";
 
 library.add(fas, far);
 
+// Both routed through a Cloudflare Worker (cloudflare-worker/worker.js)
+// that edge-caches each sheet for 5 minutes, so a burst of concurrent
+// visitors shares one Apps Script call instead of each triggering their
+// own - Apps Script's simultaneous-execution quota is low enough that a
+// classroom-sized traffic spike hitting script.google.com directly could
+// trip it.
+const WORKER_BASE_URL = "https://capstone-marketplace-proxy.capstoneconnect.workers.dev";
+
 // Source of truth: deleting a row here drops the project from the list.
-const MARKETPLACE_API_URL =
-  "https://script.google.com/macros/s/AKfycbxG4-7e9v5UernBNrKy8Iv_HvGuIDCDzwmQuokKlgDaLZ9dXo94WEsP2Kp-1Qc3jJB9Xw/exec";
+const MARKETPLACE_API_URL = `${WORKER_BASE_URL}/marketplace`;
 // Joined in by Project ID for the handful of fields only collected here
 // (thumbnail, org type, industry, company size) - see mergeProjectData.
-const RESPONSE_API_URL =
-  "https://script.google.com/macros/s/AKfycbxHMdinYiTJ4gHDpe7hL6AxjFJWU-U_PFoFdrwAg3j4n6OYIQg-XeVHIea1Es9QOacOLg/exec";
+const RESPONSE_API_URL = `${WORKER_BASE_URL}/responses`;
 
 // Caches the raw sheet rows, not the parsed Project[] - mergeProjectData
 // runs fresh on every load (cached or not), so changes to parsing logic
