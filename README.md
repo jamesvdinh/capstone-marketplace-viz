@@ -335,7 +335,7 @@ Deployment is **automatic** — you should rarely need to do this by hand.
 
 | Symptom | Likely cause | Where to look |
 |---|---|---|
-| "Failed to refresh projects: ..." toast | Apps Script URL changed/expired, or Apps Script quota tripped | `UPSTREAMS` in [`cloudflare-worker/worker.js`](cloudflare-worker/worker.js) — try opening the `.../exec` URLs directly in a browser |
+| "Failed to refresh projects: ..." toast, or Refresh Projects spins for a long time before erroring | Apps Script URL changed/expired, Apps Script quota tripped, or (most common) a transient Apps Script hiccup — the Worker has no timeout on its upstream call, so a slow/cold-starting Apps Script just makes the spinner hang until it eventually errors | Wait a minute and click "Refresh Projects" again — transient Apps Script failures usually self-resolve and aren't cached (see `worker.js`'s cache logic), so the very next request typically succeeds. If it keeps failing, check `UPSTREAMS` in [`cloudflare-worker/worker.js`](cloudflare-worker/worker.js) — try opening the `.../exec` URLs directly in a browser |
 | New sheet column doesn't show up anywhere | Parsing not updated | [Onboarding a New Sheet or Cohort → Case B](#onboarding-new-sheet) |
 | Edited a sheet but the site still shows old data | Both the Worker (5 min) and browser localStorage (10 min) cache data | Click "Refresh Projects" in the UI, and/or wait out both TTLs; hard-refreshing the page does **not** bypass the localStorage cache — the "Refresh Projects" button does |
 | A project disappeared from the list | It was deleted from the **Project Marketplace** sheet — this is by design (see [How the Data Pipeline Works](#data-pipeline)) | Check the Marketplace sheet, not the Responses sheet |
