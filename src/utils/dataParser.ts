@@ -222,7 +222,13 @@ export const mergeProjectData = (
     responseRows.map((row) => [Number(row["project_id"]), row])
   );
 
-  return marketplaceRows.map((row) =>
-    parseProjectData(row, responseById.get(Number(row["Project ID"])))
-  );
+  // Trailing blank rows in the sheet (no Project ID) aren't real projects -
+  // Number("") coerces to 0, which would otherwise collide with every other
+  // blank row on the `key={project.projectId}` in ProjectList and corrupt
+  // React's reconciliation for the whole list.
+  return marketplaceRows
+    .filter((row) => String(row["Project ID"] ?? "").trim() !== "")
+    .map((row) =>
+      parseProjectData(row, responseById.get(Number(row["Project ID"])))
+    );
 };

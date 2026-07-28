@@ -21,7 +21,8 @@ library.add(fas, far);
 // own - Apps Script's simultaneous-execution quota is low enough that a
 // classroom-sized traffic spike hitting script.google.com directly could
 // trip it.
-const WORKER_BASE_URL = "https://capstone-marketplace-proxy.capstoneconnect.workers.dev";
+const WORKER_BASE_URL =
+  "https://capstone-marketplace-proxy.capstoneconnect.workers.dev";
 
 // Source of truth: deleting a row here drops the project from the list.
 const MARKETPLACE_API_URL = `${WORKER_BASE_URL}/marketplace`;
