@@ -156,14 +156,14 @@ Before touching any ingestion code, understand the full path data takes, end to 
 <summary>📊 Full data-flow diagram (click to expand)</summary>
 
 ```text
-┌─────────────────────┐     ┌─────────────────────┐
-│ Project Marketplace  │     │  Form Responses      │
+┌──────────────────────┐     ┌───────────────────────┐
+│ Project Marketplace  │     │  Form Responses       │
 │ Google Sheet         │     │  Google Sheet         │
 │ (source of truth for │     │  (source of truth for │
 │  which projects      │     │   thumbnail, org type,│
-│  exist)               │     │   industry, company   │
+│  exist)              │     │   industry, company   │
 │                      │     │   size)               │
-└──────────┬───────────┘     └──────────┬───────────┘
+└──────────┬───────────┘     └────────────┬──────────┘
            │ bound Apps Script            │ bound Apps Script
            │ (Extensions → Apps Script)   │ (Extensions → Apps Script)
            │ deployed as a Web App        │ deployed as a Web App
