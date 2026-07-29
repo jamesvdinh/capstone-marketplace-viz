@@ -383,6 +383,7 @@ const FilterOptions = ({
             value={searchInput}
             placeholder="Search by id, title, keywords, advisor..."
             onChange={(e) => setSearchInput(e.target.value)}
+            autoComplete="off"
           />
         </SelectWrapper>
 
