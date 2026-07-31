@@ -30,7 +30,7 @@ const CACHE_TTL_SECONDS = 300;
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Allow-Headers": "Content-Type, X-Force-Refresh",
 };
 
 function withCors(response) {
@@ -61,9 +61,17 @@ export default {
     const cache = caches.default;
     const cacheKey = new Request(url.toString(), request);
 
-    const cached = await cache.match(cacheKey);
-    if (cached) {
-      return withCors(cached);
+    // A client-initiated "clean" refresh skips straight to the upstream
+    // fetch below instead of serving whatever's already cached. It still
+    // writes the result back under the same cacheKey, so everyone else's
+    // next request picks up the fresh data too - unless they also force it.
+    const forceRefresh = request.headers.get("X-Force-Refresh") === "true";
+
+    if (!forceRefresh) {
+      const cached = await cache.match(cacheKey);
+      if (cached) {
+        return withCors(cached);
+      }
     }
 
     const upstreamResponse = await fetch(upstream, { redirect: "follow" });

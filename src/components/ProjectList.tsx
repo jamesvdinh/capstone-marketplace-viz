@@ -150,11 +150,18 @@ const ProjectList = ({
         }
       }
 
-      // if no fresh cache, fetch projects like normal and update cache
+      // if no fresh cache, fetch projects like normal and update cache.
+      // A user-triggered refresh also asks the Cloudflare Worker to bypass
+      // its own edge cache (see worker.js) instead of just skipping our
+      // local one - otherwise "Refresh Projects" could still hand back
+      // whatever the Worker cached up to 5 minutes ago.
       try {
+        const refreshHeaders: HeadersInit | undefined = forceRefresh
+          ? { "X-Force-Refresh": "true" }
+          : undefined;
         const [marketplaceRes, responseRes] = await Promise.all([
-          fetch(MARKETPLACE_API_URL),
-          fetch(RESPONSE_API_URL),
+          fetch(MARKETPLACE_API_URL, { headers: refreshHeaders }),
+          fetch(RESPONSE_API_URL, { headers: refreshHeaders }),
         ]);
         if (!marketplaceRes.ok) {
           throw new Error(
@@ -215,6 +222,13 @@ const ProjectList = ({
         <LoadingContainer>
           <LoadingIcon />
           <LoadingText>Loading projects…</LoadingText>
+          {forceRefresh && (
+            <LoadingSubtext>
+              Fetching fresh data from Google Sheets - this can take up to a
+              minute. Feel free to refresh the page if it's taking longer than
+              that.
+            </LoadingSubtext>
+          )}
         </LoadingContainer>
       )}
       <FilterOptions
@@ -494,6 +508,14 @@ const LoadingText = styled.p`
   margin: 0;
   font-size: 0.875rem;
   color: ${palette.accent};
+`;
+
+const LoadingSubtext = styled.p`
+  margin: 0;
+  font-size: 0.75rem;
+  color: ${palette.accent};
+  opacity: 0.8;
+  text-align: center;
 `;
 
 const ScrollTopButton = styled.button<{ $show: boolean }>`
