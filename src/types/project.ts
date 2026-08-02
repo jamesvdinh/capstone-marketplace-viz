@@ -14,4 +14,5 @@ export type Project = {
   companySize: string;
   teamSizes: string[];
   usCitizenshipRequired: boolean;
+  projectScope: string;
 };

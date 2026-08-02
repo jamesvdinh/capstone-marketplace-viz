@@ -35,22 +35,30 @@ const normalizeOrganizationType = (value: string) =>
 const TRI_STATE_OPTIONS = ["All", "No", "Yes"] as const;
 type TriState = (typeof TRI_STATE_OPTIONS)[number];
 
-// Shared control for Yes/No/All sheet fields (e.g. US citizenship) - a
-// three-position slider, reusable with a different label/value/handler.
-const TriStateSlider = ({
+const SCOPE_OPTIONS = ["All", "Broad", "Narrow", "Very Narrow"] as const;
+type ProjectScopeFilter = (typeof SCOPE_OPTIONS)[number];
+
+// Shared control for small fixed-vocabulary sheet fields (e.g. US
+// citizenship, Project Scope) - an evenly-divided slider with as many
+// positions as options, reusable with a different label/options/handler.
+const SegmentedSlider = <T extends string>({
   label,
+  options,
   value,
   onChange,
+  wide,
 }: {
   label: string;
-  value: TriState;
-  onChange: (value: TriState) => void;
+  options: readonly T[];
+  value: T;
+  onChange: (value: T) => void;
+  wide?: boolean;
 }) => (
-  <SelectWrapper>
+  <SelectWrapper className={wide ? "wide" : undefined}>
     <Label as="span">{label}</Label>
     <SliderTrack role="radiogroup" aria-label={label}>
-      <SliderThumb $index={TRI_STATE_OPTIONS.indexOf(value)} />
-      {TRI_STATE_OPTIONS.map((option) => (
+      <SliderThumb $index={options.indexOf(value)} $count={options.length} />
+      {options.map((option) => (
         <SliderOption
           key={option}
           type="button"
@@ -209,56 +217,47 @@ const FilterOptions = ({
     []
   );
   const [industryInput, setIndustryInput] = useState<string[]>([]);
-  const [companySizeInput, setCompanySizeInput] = useState<string[]>([]);
   const [citizenshipInput, setCitizenshipInput] = useState<TriState>("All");
+  const [projectScopeInput, setProjectScopeInput] =
+    useState<ProjectScopeFilter>("All");
   const [showMoreFilters, setShowMoreFilters] = useState(false);
   const [openFilter, setOpenFilter] = useState<string | null>(null);
 
-  const {
-    advisorDepts,
-    acceptingStudentsFrom,
-    teamSizes,
-    industries,
-    companySizes,
-  } = useMemo(() => {
-    const uniqueAdvisorDepts = new Set<string>();
-    const uniqueAcceptingStudentsFrom = new Set<string>();
-    const uniqueTeamSizes = new Set<string>();
-    const uniqueIndustries = new Set<string>();
-    const uniqueCompanySizes = new Set<string>();
+  const { advisorDepts, acceptingStudentsFrom, teamSizes, industries } =
+    useMemo(() => {
+      const uniqueAdvisorDepts = new Set<string>();
+      const uniqueAcceptingStudentsFrom = new Set<string>();
+      const uniqueTeamSizes = new Set<string>();
+      const uniqueIndustries = new Set<string>();
 
-    projects.forEach((project) => {
-      if (project.ucbAffiliation) {
-        uniqueAdvisorDepts.add(project.ucbAffiliation.trim());
-      }
-      project.acceptingMajors?.forEach((major) => {
-        if (major) uniqueAcceptingStudentsFrom.add(major.trim());
+      projects.forEach((project) => {
+        if (project.ucbAffiliation) {
+          uniqueAdvisorDepts.add(project.ucbAffiliation.trim());
+        }
+        project.acceptingMajors?.forEach((major) => {
+          if (major) uniqueAcceptingStudentsFrom.add(major.trim());
+        });
+        project.teamSizes?.forEach((size) => {
+          if (size) uniqueTeamSizes.add(size.trim());
+        });
+        project.industries?.forEach((industry) => {
+          if (industry) uniqueIndustries.add(industry.trim());
+        });
       });
-      project.teamSizes?.forEach((size) => {
-        if (size) uniqueTeamSizes.add(size.trim());
-      });
-      project.industries?.forEach((industry) => {
-        if (industry) uniqueIndustries.add(industry.trim());
-      });
-      if (project.companySize) {
-        uniqueCompanySizes.add(project.companySize.trim());
-      }
-    });
 
-    return {
-      advisorDepts: Array.from(uniqueAdvisorDepts).sort(),
-      acceptingStudentsFrom: Array.from(uniqueAcceptingStudentsFrom).sort(),
-      teamSizes: Array.from(uniqueTeamSizes).sort(),
-      industries: Array.from(uniqueIndustries).sort(),
-      companySizes: Array.from(uniqueCompanySizes).sort(),
-    };
-  }, [projects]);
+      return {
+        advisorDepts: Array.from(uniqueAdvisorDepts).sort(),
+        acceptingStudentsFrom: Array.from(uniqueAcceptingStudentsFrom).sort(),
+        teamSizes: Array.from(uniqueTeamSizes).sort(),
+        industries: Array.from(uniqueIndustries).sort(),
+      };
+    }, [projects]);
 
   const hasActiveMoreFilters =
     organizationTypeInput.length > 0 ||
     industryInput.length > 0 ||
-    companySizeInput.length > 0 ||
-    citizenshipInput !== "All";
+    citizenshipInput !== "All" ||
+    projectScopeInput !== "All";
 
   const handleReset = () => {
     setSearchInput("");
@@ -267,8 +266,8 @@ const FilterOptions = ({
     setTeamSizeInput([]);
     setOrganizationTypeInput([]);
     setIndustryInput([]);
-    setCompanySizeInput([]);
     setCitizenshipInput("All");
+    setProjectScopeInput("All");
   };
 
   const displayedProjects = useMemo(() => {
@@ -336,18 +335,16 @@ const FilterOptions = ({
       );
     }
 
-    if (companySizeInput.length > 0) {
-      filtered = filtered.filter((project) =>
-        companySizeInput.some(
-          (v) => v.toLowerCase() === project.companySize.toLowerCase()
-        )
-      );
-    }
-
     if (citizenshipInput !== "All") {
       const requiresCitizenship = citizenshipInput === "Yes";
       filtered = filtered.filter(
         (project) => project.usCitizenshipRequired === requiresCitizenship
+      );
+    }
+
+    if (projectScopeInput !== "All") {
+      filtered = filtered.filter(
+        (project) => project.projectScope === projectScopeInput
       );
     }
 
@@ -360,8 +357,8 @@ const FilterOptions = ({
     teamSizeInput,
     organizationTypeInput,
     industryInput,
-    companySizeInput,
     citizenshipInput,
+    projectScopeInput,
   ]);
 
   useEffect(() => {
@@ -453,20 +450,19 @@ const FilterOptions = ({
             onClose={closeFilter}
           />
 
-          <MultiSelectFilter
-            label="External - Company Size"
-            options={companySizes}
-            selected={companySizeInput}
-            onChange={setCompanySizeInput}
-            isOpen={openFilter === "companySize"}
-            onToggle={makeToggleHandler("companySize")}
-            onClose={closeFilter}
-          />
-
-          <TriStateSlider
+          <SegmentedSlider
             label="US Citizenship Required"
+            options={TRI_STATE_OPTIONS}
             value={citizenshipInput}
             onChange={setCitizenshipInput}
+          />
+
+          <SegmentedSlider
+            label="Project Scope"
+            options={SCOPE_OPTIONS}
+            value={projectScopeInput}
+            onChange={setProjectScopeInput}
+            wide
           />
         </FilterRow>
       )}
@@ -578,6 +574,15 @@ const SelectWrapper = styled.div`
     max-width: none;
   }
 
+  /* Wide slider variants (e.g. Project Scope) need more room per segment
+     than the default 220px cap allows, or a longer option label (e.g.
+     "Very Narrow") wraps onto a second line instead of fitting on one. */
+  &.wide {
+    flex: 1 1 220px;
+    min-width: 300px;
+    max-width: 370px;
+  }
+
   @media (max-width: 600px) {
     max-width: none;
   }
@@ -593,11 +598,11 @@ const SliderTrack = styled.div`
   padding: 3px;
 `;
 
-const SliderThumb = styled.div<{ $index: number }>`
+const SliderThumb = styled.div<{ $index: number; $count: number }>`
   position: absolute;
   top: 3px;
   left: 3px;
-  width: calc((100% - 6px) / 3);
+  width: calc((100% - 6px) / ${(p) => p.$count});
   height: calc(100% - 6px);
   border-radius: 6px;
   background-color: ${palette.accent};
@@ -609,12 +614,16 @@ const SliderOption = styled.button<{ $active: boolean }>`
   position: relative;
   z-index: 1;
   flex: 1;
+  min-width: 0;
   border: none;
   background: transparent;
   border-radius: 6px;
   cursor: pointer;
   font-size: 0.8rem;
   font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   color: ${(p) => (p.$active ? "white" : "#666")};
   transition: color 0.2s ease;
 `;

@@ -106,6 +106,25 @@ const resolveThumbnail = (driveUrl: string): string => {
     : driveUrl;
 };
 
+// "Project Scope" answers are the full sentence as it appears on the intake
+// form (e.g. "Narrow: the problem is well-defined, the solution is fairly
+// clear.", sometimes with a trailing newline) - only the label before the
+// colon is needed for filtering.
+const PROJECT_SCOPE_LABELS: Record<string, string> = {
+  broad: "Broad",
+  narrow: "Narrow",
+  "very narrow": "Very Narrow",
+};
+
+const parseProjectScope = (raw: unknown): string => {
+  const label = String(raw ?? "")
+    .trim()
+    .split(":")[0]
+    .trim()
+    .toLowerCase();
+  return PROJECT_SCOPE_LABELS[label] ?? "";
+};
+
 // On the Project Marketplace sheet, "UCB Department Affiliation" is already
 // a bare dept code (e.g. "EECS", "BIOE") or the literal "External
 // Organization" for non-UCB projects - no prefix stripping needed.
@@ -189,6 +208,7 @@ const parseProjectData = (
     usCitizenshipRequired:
       String(marketplaceRow["Is US Citizenship Required?"] ?? "").trim() ===
       "Yes",
+    projectScope: parseProjectScope(marketplaceRow["Project Scope"]),
 
     // Primary comes from the joined response row's sample-visual upload;
     // department image is a separate fallback in case the primary URL
